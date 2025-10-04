@@ -21,4 +21,17 @@ export default defineConfig({
     minify: !process.env.TAURI_DEBUG ? "esbuild" : false,
     sourcemap: !!process.env.TAURI_DEBUG,
   },
+  // TODO: How to add import aliases in Vite ?
+  resolve: {
+    alias: {
+      "@public": path.resolve(__dirname, "public"),
+      "@assets": path.resolve(__dirname, "src/assets"),
+      "@components": path.resolve(__dirname, "src/components"),
+      "@pages": path.resolve(__dirname, "src/pages"),
+      "@utils": path.resolve(__dirname, "src/utils"),
+      "@sass": path.resolve(__dirname, "src/sass"),
+      "@env": path.resolve(__dirname, "./src/env"),
+    },
+    extensions: [".ts", ".js"],
+  },
 });

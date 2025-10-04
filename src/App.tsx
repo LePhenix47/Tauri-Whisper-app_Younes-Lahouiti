@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
-import env from "./env";
+import env from "@env";
 function App() {
   const [message, setMessage] = useState<string>("");
 
