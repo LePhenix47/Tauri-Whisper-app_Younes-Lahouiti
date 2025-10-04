@@ -3,7 +3,7 @@
 
 #[tauri::command]
 fn hello_world() -> String {
-    "Hello World".to_string()
+    "Hello World from Rust".to_string()
 }
 
 fn main() {

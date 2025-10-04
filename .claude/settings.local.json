@@ -10,7 +10,9 @@
       "Bash(cargo --version)",
       "Bash(curl:*)",
       "Bash(powershell -Command \"[System.IO.File]::WriteAllBytes(''icon.ico'', @(0,0,1,0,1,0,16,16,0,0,1,0,32,0,104,4,0,0,22,0,0,0))\")",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(cargo install:*)"
     ],
     "deny": [],
     "ask": []
