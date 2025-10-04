@@ -8,7 +8,14 @@ export default defineConfig({
     port: 1420,
     strictPort: true,
   },
-  envPrefix: ["VITE_", "TAURI_"],
+  envPrefix: ["REACT_APP_", "VITE_", "TAURI_"],
+  css: {
+    preprocessorOptions: {
+      scss: {
+        api: "modern-compiler", // Use modern SASS API (silences deprecation warning)
+      },
+    },
+  },
   build: {
     target: ["es2021", "chrome100", "safari13"],
     minify: !process.env.TAURI_DEBUG ? "esbuild" : false,
