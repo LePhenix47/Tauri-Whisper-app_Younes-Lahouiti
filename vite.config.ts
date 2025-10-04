@@ -1,8 +1,12 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import tsconfigPaths from "vite-tsconfig-paths";
 
-export default defineConfig({
-  plugins: [react()],
+export default defineConfig(({ mode }) => ({
+  plugins: [
+    react(),
+    tsconfigPaths(), // Automatically uses paths from tsconfig.json
+  ],
   clearScreen: false,
   server: {
     port: 1420,
@@ -12,26 +16,13 @@ export default defineConfig({
   css: {
     preprocessorOptions: {
       scss: {
-        api: "modern-compiler", // Use modern SASS API (silences deprecation warning)
+        api: "modern-compiler",
       },
     },
   },
   build: {
     target: ["es2021", "chrome100", "safari13"],
-    minify: !process.env.TAURI_DEBUG ? "esbuild" : false,
-    sourcemap: !!process.env.TAURI_DEBUG,
+    minify: mode !== "development" ? "esbuild" : false,
+    sourcemap: mode === "development",
   },
-  // TODO: How to add import aliases in Vite ?
-  resolve: {
-    alias: {
-      "@public": path.resolve(__dirname, "public"),
-      "@assets": path.resolve(__dirname, "src/assets"),
-      "@components": path.resolve(__dirname, "src/components"),
-      "@pages": path.resolve(__dirname, "src/pages"),
-      "@utils": path.resolve(__dirname, "src/utils"),
-      "@sass": path.resolve(__dirname, "src/sass"),
-      "@env": path.resolve(__dirname, "./src/env"),
-    },
-    extensions: [".ts", ".js"],
-  },
-});
+}));
