@@ -3,11 +3,11 @@
 ## TypeScript/React
 
 ### Component Structure
-```typescript
+```tsx
 import { useState } from "react";
 import "./ComponentName.scss";
 
-interface ComponentNameProps {
+type ComponentNameProps = {
   title: string;
   onAction: () => void;
 }
@@ -26,12 +26,17 @@ function ComponentName({ title, onAction }: ComponentNameProps) {
 export default ComponentName;
 ```
 
+NEVER use arrow functions
+If you create classes use the arrow function syntax on methods to avoid `this` keyword binding issues
+
 ### Rules
 - ✅ Functional components only (no class components)
+- ✅ Use BEM for classes, add classes to EVERY element
 - ✅ TypeScript strict mode
 - ✅ Props interfaces for all components
 - ✅ Avoid `any` types - use `unknown` if truly unknown
 - ✅ Use descriptive variable names
+- ❌ NEVER declare `interfaces`, always use `type`
 - ❌ No inline styles (use SASS)
 - ❌ No default exports for utilities (named exports only)
 
@@ -65,9 +70,10 @@ sass/
 
 ### CSS Variables
 - ✅ Use existing variables from `utils/_variables.scss`
-- ✅ Define component-specific variables with `--_` prefix (scoped)
-- ✅ Use semantic names (`--color-primary` not `--blue`)
+- ✅ Define component-specific variables with `--_` prefix (scoped variables)
+- ✅ Use semantic names (`--color-primary`, `color` not `--blue`)
 - ❌ Don't hardcode colors/spacing (use variables)
+- ❌ DO NOT use SASS variables, always use CSS vairables
 
 ### Example Component Style
 ```scss
