@@ -14,7 +14,8 @@
       "Bash(git commit:*)",
       "Bash(cargo install:*)",
       "Bash(cat:*)",
-      "Bash(bun add:*)"
+      "Bash(bun add:*)",
+      "Bash(cargo:*)"
     ],
     "deny": [],
     "ask": []
