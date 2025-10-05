@@ -36,12 +36,16 @@ export default ComponentName;
 ✅ DO:
 
 - Use function declarations for React components.
+- Always verify the contents of `env.ts` before referencing or modifying any environment variable (When in doubt, open env.ts and confirm the variable name and value source.)
 - Use arrow functions in classes to avoid `this` binding.
 - Strongly type props, state, and return values.
 - Enable TypeScript strict mode.
 - Use descriptive, self-explanatory variable names.
 - Prefer `unknown` over `any`
 - Use guard clause to avoid nesting if() statements when possible
+- Use optional chaining ex: `a?.b?.()?.[0]` when needed
+- Always destructure objects
+- Checkout if you can use hashmaps and create hashmaps from objects ex: `new Map(Object.entries({ foo: "bar "}))`
 
 ❌ DON'T:
 
