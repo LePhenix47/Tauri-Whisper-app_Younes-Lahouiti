@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import env from "@env";
 import {
   useDownloadModel,
@@ -6,6 +6,7 @@ import {
   useTestWhisper,
 } from "@app/hooks/useModels";
 import type { ModelName } from "@api/models";
+import { useAppStore } from "@app/stores/useAppStore";
 
 const MODELS: Array<{ name: ModelName; label: string; size: string }> = [
   { name: "tiny", label: "Tiny", size: "77 MB" },
@@ -17,6 +18,22 @@ const MODELS: Array<{ name: ModelName; label: string; size: string }> = [
 
 function App() {
   const [selectedModel, setSelectedModel] = useState<ModelName>("base");
+
+  // Theme logic - ONLY place where theme class is applied
+  const theme = useAppStore((state) => state.theme);
+
+  useEffect(() => {
+    const root = document.documentElement;
+
+    if (theme === "dark") {
+      root.classList.add("dark-theme");
+    } else if (theme === "light") {
+      root.classList.remove("dark-theme");
+    } else {
+      // "system" - let CSS @media (prefers-color-scheme) handle it
+      root.classList.remove("dark-theme");
+    }
+  }, [theme]);
 
   // TanStack Query hooks
   const { data: modelsDir } = useModelsDir();

@@ -17,16 +17,21 @@
 ---
 
 ### 4. **Animations**
-- [ ] Install **GSAP** and set up a reusable animation utility or hook (`useAnimation` or similar)  
-  - [ ] Keep all motion logic modular and reusable  
-  - [ ] Define a small animation config file for global timings/easings
+
+- [x] Install **GSAP** and set up a reusable animation utility or hook
+  - [x] Installed `gsap` + `@gsap/react` (official React integration with `useGSAP()` hook)
+  - [x] Keep all motion logic modular and reusable
+  - [x] Define a small animation config file for global timings/easings (`src/app/config/animation.config.ts`)
 
 ---
 
 ### 5. **Global State Management**
-- [ ] Choose and integrate a **modern global state library** (e.g., **Zustand**, **Jotai**, or **Recoil**)  
-  - [ ] Replace Redux with a lighter, more ergonomic solution  
-  - [ ] Establish a clean store structure that aligns with the new folder layout
+
+- [x] Choose and integrate a **modern global state library** (**Zustand**)
+  - [x] Installed Zustand with DevTools + Persist middleware
+  - [x] Establish a clean store structure that aligns with the new folder layout
+  - [x] Created example store: `src/app/stores/useAppStore.ts`
+  - [x] Added documentation: `src/app/stores/README.md`
 
 ---
 
