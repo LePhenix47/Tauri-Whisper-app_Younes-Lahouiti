@@ -5,7 +5,9 @@ use the template defined in `.claude/issue-to-chatgpt.md` as a guide,
 and output a filled-in version directly here in chat.  
 ⚠️ Do not edit or overwrite the `.claude/issue-to-chatgpt.md` file itself.
 
-If no errors were encoutered then write me a msg with an inspiring quote
+If there are no errors (or I clearly ran the wrong command by accident), 
+instead of doing nothing, reply with either an inspiring or motivating quote 
+about coding, creativity, or persistence OR a meme
 
 
 

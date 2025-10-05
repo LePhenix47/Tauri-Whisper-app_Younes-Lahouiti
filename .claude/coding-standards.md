@@ -1,8 +1,13 @@
-# Coding Standards
 
-## TypeScript/React
+# 🧭 CODING STANDARDS
 
-### Component Structure
+Consistent, scalable, and readable code across the stack:
+React + TypeScript (Frontend) · SASS (Styling) · Rust (Backend) · Git (Version Control)
+
+1. TYPESCRIPT & REACT
+
+### 1.1 COMPONENT STRUCTURE
+
 ```tsx
 import { useState } from "react";
 import "./ComponentName.scss";
@@ -10,7 +15,7 @@ import "./ComponentName.scss";
 type ComponentNameProps = {
   title: string;
   onAction: () => void;
-}
+};
 
 function ComponentName({ title, onAction }: ComponentNameProps) {
   const [state, setState] = useState<string>("");
@@ -26,70 +31,87 @@ function ComponentName({ title, onAction }: ComponentNameProps) {
 export default ComponentName;
 ```
 
-NEVER use arrow functions
-If you create classes use the arrow function syntax on methods to avoid `this` keyword binding issues
+### 1.2 RULES
 
-### Rules
-- ✅ Functional components only (no class components)
-- ✅ Use BEM for classes, add classes to EVERY element
-- ✅ TypeScript strict mode
-- ✅ Props interfaces for all components
-- ✅ Avoid `any` types - use `unknown` if truly unknown
-- ✅ Use descriptive variable names
-- ❌ NEVER declare `interfaces`, always use `type`
-- ❌ No inline styles (use SASS)
-- ❌ No default exports for utilities (named exports only)
+✅ DO:
 
----
+- Use function declarations for React components.
+- Use arrow functions in classes to avoid `this` binding.
+- Strongly type props, state, and return values.
+- Enable TypeScript strict mode.
+- Use descriptive, self-explanatory variable names.
+- Prefer `unknown` over `any`
+- Use guard clause to avoid nesting if() statements when possible
 
-## SASS
+❌ DON'T:
 
-### File Organization (7-1 Pattern)
+- Use `interface` to declare types (prefer `type`)
+- Use inline styles
+- Default-export utilities
+- Forget to remove event listeners in the `useEffect` if we added one
+
+2. SASS / STYLING
+
+### 2.1 FOLDER ORGANIZATION (7-1 PATTERN)
+
 ```
 sass/
-├── base/           # Resets, typography
-├── components/     # Component-specific styles
-├── layout/         # Layout elements (header, footer)
-├── pages/          # Page-specific styles
-├── themes/         # Theme variations
-├── utils/          # Variables, mixins, functions
-└── main.scss       # Main entry (imports all)
+├ base/           # Resets, typography
+├ components/     # Component-specific styles
+├ layout/         # Layout elements (header, footer)
+├ pages/          # Page-specific styles
+├ themes/         # Theme variations
+├ utils/          # Variables, mixins, functions
+└ main.scss       # Main entry (imports all)
 ```
 
-### Importing Utils
+### 2.2 NAMING & METHODOLOGY
+
+✅ DO:
+
+- Use BEM (Block–Element–Modifier) for class naming.
+  Example: .button__icon--active
+- Keep selectors shallow (avoid over-nesting).
+- Use semantic, purpose-driven class names (.sidebar__toggle, not .left-btn).
+- Create SASS functions to improve DX
+
+❌ DON'T:
+
+- Use camelCase or snake_case in class names.
+- Mix utility and semantic classes.
+- Create SASS functions which aren't needed
+
+### 2.3 CSS VARIABLES
+
+✅ DO:
+
+- Define and reuse variables from utils/_variables.scss.
+- Use scoped component variables with --_ prefix.
+- Use semantic variable names (--color-primary, not --blue).
+
+❌ DON'T:
+
+- Hardcode colors, sizes, or spacing.
+- Use SASS $variables for theme values (use CSS vars instead).
+
+### 2.4 EXAMPLE
+
 ```scss
 @use "../utils/" as *;
 
-.my-component {
-  @include center-flex(10px);
-
-  background-color: var(--bg-primary);
-  color: var(--color-primary);
-}
-```
-
-### CSS Variables
-- ✅ Use existing variables from `utils/_variables.scss`
-- ✅ Define component-specific variables with `--_` prefix (scoped variables)
-- ✅ Use semantic names (`--color-primary`, `color` not `--blue`)
-- ❌ Don't hardcode colors/spacing (use variables)
-- ❌ DO NOT use SASS variables, always use CSS vairables
-
-### Example Component Style
-```scss
-@use "../utils/" as *;
-
-.button {
+.paragraph {
   --_bg: var(--color-primary);
   --_color: var(--bg-primary);
-  --_padding: 10px 20px;
+  --_padding: 20px;
 
   background-color: var(--_bg);
   color: var(--_color);
   padding: var(--_padding);
 
+  inline-size: calc(100% - var(--_padding));
+
   @include mobile-only {
-    padding: 8px 16px;
+    --_padding: 8px;
   }
 
   &:hover {
@@ -98,139 +120,88 @@ sass/
 }
 ```
 
-### Responsive Design
-Use mixins from `utils/_mixins.scss`:
-```scss
-.element {
-  font-size: 16px;
+3. RUST (TAURI BACKEND)
 
-  @include mobile-only {
-    font-size: 14px;
-  }
+### 3.1 EXAMPLE COMMAND
 
-  @include desktop-only {
-    font-size: 18px;
-  }
-}
-```
-
-**Breakpoints:**
-- Mobile: ≤768px
-- Tablet: 768px–992px
-- Laptop: 992px–1150px
-- Desktop Small: 1150px–1475px
-- Desktop: ≥1475px
-
----
-
-## Rust
-
-### Tauri Commands
 ```rust
 #[tauri::command]
 fn process_audio(file_path: String) -> Result<String, String> {
-    // Process audio file
     match do_processing(&file_path) {
         Ok(result) => Ok(result),
         Err(e) => Err(e.to_string()),
     }
 }
-
-// Register in main()
-fn main() {
-    tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![process_audio])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
-}
 ```
 
-### Rules
-- ✅ Use `Result<T, E>` for functions that can fail
-- ✅ Convert errors to strings for frontend: `Err(e.to_string())`
-- ✅ Keep commands small and focused
-- ✅ Use meaningful function/variable names
-- ❌ No unwrap() in production code (use proper error handling)
+### 3.2 RULES
 
----
+✅ DO:
 
-## Git
+- Use Result<T, E> for fallible operations.
+- Convert errors to strings for frontend consumption.
+- Keep each command small and focused.
 
-### Commit Messages
+❌ DON'T:
+
+- Use unwrap() or expect() in production.
+
+4. GIT STANDARDS
+
+### 4.1 COMMIT MESSAGES
+
 ```
-<type>: <short description>
+<type>: <short summary>
 
 - Change 1
 - Change 2
-- Change 3
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
+🤖 Generated with Claude Code
 Co-Authored-By: Claude <noreply@anthropic.com>
 ```
 
-**Types:**
+**TYPES:**
+
 - `feat` - New feature
 - `fix` - Bug fix
-- `docs` - Documentation changes
-- `style` - Code style (formatting, no logic change)
-- `refactor` - Code refactoring
-- `test` - Adding/updating tests
-- `chore` - Maintenance (deps, config)
+- `docs` - Documentation
+- `style` - Formatting only
+- `refactor` - Code restructuring
+- `test` - Tests
+- `chore` - Maintenance / config
 
-### Branch Naming
-- `feature/feature-name`
-- `fix/bug-description`
-- `docs/update-readme`
+### 4.2 BRANCH NAMING
 
----
-
-## Naming Conventions
-
-### Files
-- React components: `PascalCase.tsx`
-- Utilities: `camelCase.ts`
-- SASS partials: `_lowercase.scss`
-- SASS main: `lowercase.scss`
-
-### Variables/Functions
-- TypeScript: `camelCase`
-- React components: `PascalCase`
-- Constants: `UPPER_SNAKE_CASE`
-- CSS classes: `kebab-case`
-- CSS variables: `--kebab-case`
-- SASS variables: `$kebab-case`
-
-### Examples
-```typescript
-// TypeScript
-const audioFilePath = "/path/to/file.mp3";
-const MAX_FILE_SIZE = 100 * 1024 * 1024;
-
-function processAudioFile(path: string): void {}
-
-// React
-function AudioPlayer({ fileName }: AudioPlayerProps) {}
-
-// CSS
-.audio-player {
-  --_player-bg: var(--bg-primary);
-}
+```
+feature/<name>
+fix/<description>
+docs/<topic>
 ```
 
----
+5. NAMING CONVENTIONS
 
-## Accessibility
+Context               | Convention       | Example
+┼┼
+React Components      | PascalCase       | AudioPlayer.tsx
+Variables / Functions | camelCase        | processAudioFile()
+Constants             | UPPER_SNAKE_CASE | MAX_FILE_SIZE
+CSS Classes           | kebab-case       | .audio-player-card
+Global CSS Vars       | --kebab-case     | --color-primary
+Local CSS Vars        | --_kebab-case    | --_padding-inline
+SASS Partials         | _lowercase.scss  |_mixins.scss
 
-### Required
-- ✅ Semantic HTML (`<button>`, `<nav>`, `<main>`, etc.)
-- ✅ Alt text for images
-- ✅ Keyboard navigation support
-- ✅ ARIA labels where needed
-- ✅ Color contrast (WCAG AA minimum)
-- ✅ Respect `prefers-reduced-motion`
+6. ACCESSIBILITY
 
-### Example
+✅ DO:
+
+- Use semantic HTML (<button>, <main>, <nav>, etc.)
+- Add alt text and ARIA labels.
+- Ensure full keyboard navigation.
+- Maintain WCAG AA contrast ratio.
+- Respect prefers-reduced-motion.
+
+**Example:**
+
 ```tsx
 <button
   onClick={handleClick}
@@ -241,38 +212,39 @@ function AudioPlayer({ fileName }: AudioPlayerProps) {}
 </button>
 ```
 
----
+7. PERFORMANCE
 
-## Performance
+### 7.1 REACT
 
-### React
-- ✅ Use `useMemo` for expensive calculations
-- ✅ Use `useCallback` for event handlers passed to children
-- ✅ Lazy load routes/components
-- ❌ Don't optimize prematurely
+✅ DO:
 
-### SASS
-- ✅ Keep selectors shallow (max 3 levels)
-- ✅ Avoid overly complex selectors
-- ✅ Use CSS variables instead of SASS variables when possible (themeable)
+- Use useMemo and useCallback for expensive work.
+- Lazy-load components and routes.
+- Use useReducer or useTransition for complex state.
 
----
+❌ DON'T:
 
-## Testing (Future)
+- Optimize prematurely.
 
-### Unit Tests
-- Component logic
-- Utility functions
-- Rust functions
+### 7.2 SASS
 
-### Integration Tests
-- Frontend ↔ Backend communication
-- File processing workflows
+✅ DO:
 
-### E2E Tests
-- Critical user flows
-- Subtitle generation end-to-end
+- Keep selectors shallow (≤3 levels).
+- Use CSS variables for theming.
 
----
+❌ DON'T:
 
-**Last Updated**: 2025-10-04
+- Over-nest selectors.
+
+8. TESTING (FUTURE)
+
+Type            | Scope
+┼
+Unit Tests      | Component logic, utilities, Rust functions
+Integration     | Frontend ↔ Backend communication
+E2E Tests       | Core user flows, subtitle generation
+
+Potential Storybook integration for UI testing.
+
+LAST UPDATED: 2025-10-04

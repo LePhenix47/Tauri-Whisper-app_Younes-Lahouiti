@@ -7,6 +7,18 @@ A desktop application for subtitle generation built with Tauri, Rust, React, Typ
 - [Rust](https://www.rust-lang.org/tools/install) (latest stable)
 - [Bun](https://bun.sh/) (recommended) or [Node.js](https://nodejs.org/) 18+ (fallback)
 
+The app uses a Rust wrapper for the C++ Whisper implementation: [`whisper-rs`](https://codeberg.org/tazz4843/whisper-rs) 
+- **[CMake](https://cmake.org/download/)** (required for building whisper-rs)
+  - Download `cmake-<version>-windows-x86_64.msi` for Windows
+  - ✅ Check "Add CMake to system PATH" during installation
+  - Verify with: `cmake --version`
+- **[LLVM/Clang](https://github.com/llvm/llvm-project/releases/latest)** (required for building whisper-rs)
+  - Download `LLVM-<version>-win64.exe` for Windows
+  - ✅ Check "Add LLVM to the system PATH" during installation
+  - Verify with: `clang --version`
+
+See [Whisper models](https://huggingface.co/ggerganov/whisper.cpp/tree/main)
+
 ## Setup
 
 1. Clone the repository
