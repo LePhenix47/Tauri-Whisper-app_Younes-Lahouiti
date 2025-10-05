@@ -34,7 +34,7 @@ function App() {
   return (
     <div className="container">
       <h1>Tauri Whisper App</h1>
-      <p>Running on {env.MODE}</p>
+      <p>Running on {env.REACT_APP_NODE_ENV}</p>
 
       <hr />
 
@@ -60,7 +60,9 @@ function App() {
           onClick={handleDownload}
           disabled={downloadModelMutation.isPending}
         >
-          {downloadModelMutation.isPending ? "Downloading..." : "Download Model"}
+          {downloadModelMutation.isPending
+            ? "Downloading..."
+            : "Download Model"}
         </button>
       </div>
 

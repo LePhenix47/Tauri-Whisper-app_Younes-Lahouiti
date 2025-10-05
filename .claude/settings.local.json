@@ -15,7 +15,8 @@
       "Bash(cargo install:*)",
       "Bash(cat:*)",
       "Bash(bun add:*)",
-      "Bash(cargo:*)"
+      "Bash(cargo:*)",
+      "Bash(bunx:*)"
     ],
     "deny": [],
     "ask": []

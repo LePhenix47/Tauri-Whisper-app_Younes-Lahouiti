@@ -9,15 +9,10 @@
 ---
 
 ### 2. **Data Fetching & API Layer**
-- [ ] Evaluate and integrate **TanStack Query** for smarter data fetching, caching, and state management  
-  - [ ] Determine if it should wrap or complement `invoke()` calls to the backend  
-  - [ ] Define a consistent abstraction for all async requests
 
----
-
-### 3. **Error Handling**
-- [ ] Install and configure **neverthrow** for functional-style error handling  
-  - [ ] Adopt a `Result`-based pattern similar to Go’s error management for cleaner async flows
+- [x] Evaluate and integrate **TanStack Query** for smarter data fetching, caching, and state management
+  - [x] Determine if it should wrap or complement `invoke()` calls to the backend
+  - [x] Define a consistent abstraction for all async requests (`src/api/models.ts` with typed `invoke()` wrapper)
 
 ---
 
