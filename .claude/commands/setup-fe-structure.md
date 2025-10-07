@@ -36,7 +36,11 @@
 ---
 
 ### 6. **(Future) Developer Experience Enhancements**
-- [ ] Add **Biome** as a linter for strict rules for consistency  
-- [ ] **Set up Storybook (or Ladle)** once the component library matures  
+
+- [x] Add **Biome** as a linter for strict rules for consistency
+  - [x] Installed `@biomejs/biome` (ESLint + Prettier alternative in one tool)
+  - [x] Created `biome.json` configuration
+  - [x] Added scripts: `bun run lint`, `bun run lint:fix`, `bun run format`
+- [ ] **Set up Storybook (or Ladle)** once the component library matures
   - [ ] Add HeroUI design system (check first if style ain't screwed up)
   - [ ] Enable visual testing, faster prototyping, and design QA
