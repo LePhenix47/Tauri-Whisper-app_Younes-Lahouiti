@@ -16,7 +16,9 @@
       "Bash(cat:*)",
       "Bash(bun add:*)",
       "Bash(cargo:*)",
-      "Bash(bunx:*)"
+      "Bash(bunx:*)",
+      "Bash(bun dlx storybook:*)",
+      "Bash(npx storybook@latest init:*)"
     ],
     "deny": [],
     "ask": []

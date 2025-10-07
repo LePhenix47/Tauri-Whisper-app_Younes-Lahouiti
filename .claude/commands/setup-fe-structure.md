@@ -41,6 +41,10 @@
   - [x] Installed `@biomejs/biome` (ESLint + Prettier alternative in one tool)
   - [x] Created `biome.json` configuration
   - [x] Added scripts: `bun run lint`, `bun run lint:fix`, `bun run format`
-- [ ] **Set up Storybook (or Ladle)** once the component library matures
-  - [ ] Add HeroUI design system (check first if style ain't screwed up)
-  - [ ] Enable visual testing, faster prototyping, and design QA
+- [x] **Set up Storybook** for component development
+  - [x] Installed Storybook 9.1.10 with Vite + React
+  - [x] Auto-detected Vite framework and configured accordingly
+  - [x] Added global SASS import to `.storybook/preview.ts`
+  - [x] Included addons: Chromatic, Docs, Onboarding, A11y, Vitest
+  - [x] Scripts: `bun run storybook`, `bun run build-storybook`
+- [ ] Add HeroUI design system (check first if style ain't screwed up)

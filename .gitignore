@@ -45,3 +45,6 @@ src-tauri/Cargo.lock
 
 # Windows artifacts
 nul
+
+*storybook.log
+storybook-static
