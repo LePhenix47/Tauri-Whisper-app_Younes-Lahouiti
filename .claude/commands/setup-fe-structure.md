@@ -36,7 +36,7 @@
 ---
 
 ### 6. **(Future) Developer Experience Enhancements**
-- [x] Add **ESLint + Prettier** strict rules for consistency  
+- [ ] Add **Biome** as a linter for strict rules for consistency  
 - [ ] **Set up Storybook (or Ladle)** once the component library matures  
-  - [ ] Document reusable UI components  
+  - [ ] Add HeroUI design system (check first if style ain't screwed up)
   - [ ] Enable visual testing, faster prototyping, and design QA
