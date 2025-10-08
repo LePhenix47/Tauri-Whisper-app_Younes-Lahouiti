@@ -18,7 +18,9 @@
       "Bash(cargo:*)",
       "Bash(bunx:*)",
       "Bash(bun dlx storybook:*)",
-      "Bash(npx storybook@latest init:*)"
+      "Bash(npx storybook@latest init:*)",
+      "Bash(npx tailwindcss init:*)",
+      "Bash(bun remove:*)"
     ],
     "deny": [],
     "ask": []

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Button } from "@heroui/react";
 import env from "@env";
 import {
   useDownloadModel,
@@ -52,6 +53,11 @@ function App() {
     <div className="container">
       <h1>Tauri Whisper App</h1>
       <p>Running on {env.REACT_APP_NODE_ENV}</p>
+
+      {/* Test HeroUI Button */}
+      <Button color="primary" variant="shadow">
+        HeroUI Test Button
+      </Button>
 
       <hr />
 
