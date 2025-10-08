@@ -69,13 +69,12 @@
     }
 
     body {
-        display: grid;
-        grid-template-rows: auto 1fr auto;
+        display: flex;
+        flex-direction: column;
         min-height: 100svh;
 
         min-height: 100svh;
         overflow-x: hidden;
-        background-color: var(--bg-primary);
         color: var(--color-primary);
 
         transition:

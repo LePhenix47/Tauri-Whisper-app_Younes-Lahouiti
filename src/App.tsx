@@ -1,5 +1,16 @@
 import { useState, useEffect } from "react";
-import { Button } from "@heroui/react";
+import {
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  Input,
+  Select,
+  SelectItem,
+  Chip,
+  Progress,
+  Spinner,
+} from "@heroui/react";
 import env from "@env";
 import {
   useDownloadModel,
@@ -22,18 +33,28 @@ function App() {
 
   // Theme logic - ONLY place where theme class is applied
   const theme = useAppStore((state) => state.theme);
+  const setTheme = useAppStore((state) => state.setTheme);
 
   useEffect(() => {
     const root = document.documentElement;
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
 
-    if (theme === "dark") {
-      root.classList.add("dark-theme");
-    } else if (theme === "light") {
-      root.classList.remove("dark-theme");
-    } else {
-      // "system" - let CSS @media (prefers-color-scheme) handle it
-      root.classList.remove("dark-theme");
-    }
+    const applyTheme = () => {
+      const isDark =
+        theme === "dark" || (theme === "system" && mediaQuery.matches);
+      root.classList.toggle("dark", isDark);
+    };
+
+    // Apply theme immediately
+    applyTheme();
+
+    // Listen for OS theme changes when in system mode
+    const handleChange = () => {
+      if (theme === "system") applyTheme();
+    };
+
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
   }, [theme]);
 
   // TanStack Query hooks
@@ -50,68 +71,137 @@ function App() {
   }
 
   return (
-    <div className="container">
-      <h1>Tauri Whisper App</h1>
-      <p>Running on {env.REACT_APP_NODE_ENV}</p>
+    <div className="">
+      <Card>
+        <CardHeader>
+          <div className="header-content">
+            <h1>Tauri Whisper App</h1>
+            <Select
+              label="Theme"
+              selectedKeys={[theme]}
+              onChange={(e) =>
+                setTheme(e.target.value as "light" | "dark" | "system")
+              }
+              className="theme-switcher"
+            >
+              <SelectItem key="light">Light</SelectItem>
+              <SelectItem key="dark">Dark</SelectItem>
+              <SelectItem key="system">System</SelectItem>
+            </Select>
+          </div>
+        </CardHeader>
+        <CardBody>
+          <div>
+            <p>Running on {env.REACT_APP_NODE_ENV}</p>
 
-      {/* Test HeroUI Button */}
-      <Button color="primary" variant="shadow">
-        HeroUI Test Button
-      </Button>
+            {/* HeroUI Component Tests */}
+            <div className="test-buttons">
+              <Button color="primary" variant="shadow">
+                Primary Button
+              </Button>
+              <Button color="secondary" variant="flat">
+                Secondary Button
+              </Button>
+              <Button color="success" variant="bordered">
+                Success Button
+              </Button>
+              <Button color="danger" isLoading>
+                Loading Button
+              </Button>
+              <Chip color="warning" variant="dot">
+                Status Chip
+              </Chip>
+            </div>
+
+            <Input
+              label="Test Input"
+              placeholder="Enter something..."
+              variant="bordered"
+            />
+
+            <Progress
+              label="Progress Test"
+              value={65}
+              color="primary"
+              showValueLabel
+            />
+          </div>
+        </CardBody>
+      </Card>
 
       <hr />
 
-      <h2>Download Whisper Model</h2>
+      <Card>
+        <CardHeader>
+          <h2>Download Whisper Model</h2>
+        </CardHeader>
+        <CardBody>
+          {modelsDir && <p className="message">Models folder: {modelsDir}</p>}
 
-      {modelsDir && <p className="message">Models folder: {modelsDir}</p>}
+          <Select
+            label="Select Model"
+            placeholder="Choose a model"
+            selectedKeys={[selectedModel]}
+            onChange={(e) => setSelectedModel(e.target.value as ModelName)}
+            isDisabled={downloadModelMutation.isPending}
+          >
+            {MODELS.map((model) => (
+              <SelectItem key={model.name}>
+                {model.label} ({model.size})
+              </SelectItem>
+            ))}
+          </Select>
 
-      <div>
-        <label htmlFor="model-select">Select Model:</label>
-        <select
-          id="model-select"
-          value={selectedModel}
-          onChange={(e) => setSelectedModel(e.target.value as ModelName)}
-          disabled={downloadModelMutation.isPending}
-        >
-          {MODELS.map((model) => (
-            <option key={model.name} value={model.name}>
-              {model.label} ({model.size})
-            </option>
-          ))}
-        </select>
-        <button
-          onClick={handleDownload}
-          disabled={downloadModelMutation.isPending}
-        >
-          {downloadModelMutation.isPending
-            ? "Downloading..."
-            : "Download Model"}
-        </button>
-      </div>
+          <Button
+            color="primary"
+            onPress={handleDownload}
+            isDisabled={downloadModelMutation.isPending}
+            isLoading={downloadModelMutation.isPending}
+          >
+            {downloadModelMutation.isPending
+              ? "Downloading..."
+              : "Download Model"}
+          </Button>
 
-      {downloadModelMutation.isSuccess && (
-        <p className="message">{downloadModelMutation.data}</p>
-      )}
-      {downloadModelMutation.isError && (
-        <p className="message">Error: {downloadModelMutation.error.message}</p>
-      )}
+          {downloadModelMutation.isSuccess && (
+            <Chip color="success" variant="flat">
+              {downloadModelMutation.data}
+            </Chip>
+          )}
+          {downloadModelMutation.isError && (
+            <Chip color="danger" variant="flat">
+              Error: {downloadModelMutation.error.message}
+            </Chip>
+          )}
+        </CardBody>
+      </Card>
 
-      <hr />
+      <Card>
+        <CardHeader>
+          <h2>Test Whisper</h2>
+        </CardHeader>
+        <CardBody>
+          <Button
+            color="secondary"
+            onPress={handleTestWhisper}
+            isDisabled={testWhisperMutation.isPending}
+            isLoading={testWhisperMutation.isPending}
+          >
+            {testWhisperMutation.isPending ? "Testing..." : "Test Whisper-RS"}
+          </Button>
 
-      <h2>Test Whisper</h2>
-      <button
-        onClick={handleTestWhisper}
-        disabled={testWhisperMutation.isPending}
-      >
-        {testWhisperMutation.isPending ? "Testing..." : "Test Whisper-RS"}
-      </button>
-
-      {testWhisperMutation.isSuccess && (
-        <p className="message">{testWhisperMutation.data}</p>
-      )}
-      {testWhisperMutation.isError && (
-        <p className="message">Error: {testWhisperMutation.error.message}</p>
-      )}
+          {testWhisperMutation.isSuccess && (
+            <Chip color="success" variant="flat">
+              {testWhisperMutation.data}
+            </Chip>
+          )}
+          {testWhisperMutation.isError && (
+            <Chip color="danger" variant="flat">
+              Error: {testWhisperMutation.error.message}
+            </Chip>
+          )}
+        </CardBody>
+      </Card>
     </div>
   );
 }
