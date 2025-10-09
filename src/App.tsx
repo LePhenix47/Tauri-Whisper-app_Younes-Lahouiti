@@ -2,11 +2,13 @@ import { useEffect } from "react";
 import { Outlet } from "@tanstack/react-router";
 import { Select, SelectItem } from "@heroui/react";
 import { useAppStore } from "@app/stores/useAppStore";
+import { Sidebar } from "@/components/Sidebar";
 
 function App() {
   // Theme logic - ONLY place where theme class is applied
   const theme = useAppStore((state) => state.theme);
   const setTheme = useAppStore((state) => state.setTheme);
+  const sidebarOpen = useAppStore((state) => state.sidebarOpen);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -16,6 +18,7 @@ function App() {
       const isDark =
         theme === "dark" || (theme === "system" && mediaQuery.matches);
       root.classList.toggle("dark", isDark);
+      root.classList.toggle("light", !isDark);
     };
 
     // Apply theme immediately
@@ -32,24 +35,30 @@ function App() {
 
   return (
     <div className="app-layout">
-      <header className="app-header">
-        <h1>Tauri Whisper App</h1>
-        <Select
-          label="Theme"
-          selectedKeys={[theme]}
-          onChange={(e) =>
-            setTheme(e.target.value as "light" | "dark" | "system")
-          }
-          className="theme-switcher"
-        >
-          <SelectItem key="light">Light</SelectItem>
-          <SelectItem key="dark">Dark</SelectItem>
-          <SelectItem key="system">System</SelectItem>
-        </Select>
-      </header>
-      <main>
-        <Outlet />
-      </main>
+      <Sidebar />
+
+      <div
+        className={`app-content ${sidebarOpen ? "sidebar-open" : "sidebar-closed"}`}
+      >
+        <header className="app-header">
+          <h1>Tauri Whisper App</h1>
+          <Select
+            label="Theme"
+            selectedKeys={[theme]}
+            onChange={(e) =>
+              setTheme(e.target.value as "light" | "dark" | "system")
+            }
+            className="theme-switcher"
+          >
+            <SelectItem key="light">Light</SelectItem>
+            <SelectItem key="dark">Dark</SelectItem>
+            <SelectItem key="system">System</SelectItem>
+          </Select>
+        </header>
+        <main>
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 }

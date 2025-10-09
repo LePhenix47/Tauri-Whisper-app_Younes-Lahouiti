@@ -7,10 +7,12 @@
 
 //Components
 @forward "./components/scrollbar";
+@forward "./components/sidebar";
 
 //Layout
 @forward "./layout/header";
 @forward "./layout/footer";
+@forward "./layout/app-layout";
 
 //Pages
 @forward "./pages/index";

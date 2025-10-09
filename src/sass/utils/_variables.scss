@@ -1,50 +1,54 @@
-:root {
-    --bg-primary: white;
-    --bg-secondary: white;
+.light {
+    :root {
+        --bg-primary: white;
+        --bg-secondary: #f9f9f9;
+        --bg-hover: #f0f0f0;
+        --bg-active: #e8e8e8;
 
-    --color-primary: #323232;
-    --color-primary--hover: #3c3c3c;
-    --color-primary--active: #474747;
-    --color-secondary: #757575;
+        --color-primary: #323232;
+        --color-primary--hover: #3c3c3c;
+        --color-primary--active: #474747;
+        --color-secondary: #757575;
 
-    --editor-bg-color: #F5F5F5;
-    --editor-pieces-bg-color: transparent;
+        --editor-bg-color: #F5F5F5;
+        --editor-pieces-bg-color: transparent;
 
-    --semi-transparent-bg: rgba(255, 255, 255, 70%);
+        --semi-transparent-bg: rgba(255, 255, 255, 70%);
 
-    --border-color: #DBDBDB;
+        --border-color: #DBDBDB;
 
-    --scrollbar-track-bg-color: white;
+        --scrollbar-track-bg-color: white;
 
-    --scrollbar-thumb-bg-color: #545454;
-    --scrollbar-thumb-bg-color--hover: #757575;
-    --scrollbar-thumb-bg-color--active: #b0b0b0;
+        --scrollbar-thumb-bg-color: #545454;
+        --scrollbar-thumb-bg-color--hover: #757575;
+        --scrollbar-thumb-bg-color--active: #b0b0b0;
 
-    --ts-item-bg: white;
-    --ts-container-bg: #f2f2f2;
+        --ts-item-bg: white;
+        --ts-container-bg: #f2f2f2;
 
-    --ts-input-bg: #F5F5F5;
-    --ts-input-bg-focus: #F5F5F5;
+        --ts-input-bg: #F5F5F5;
+        --ts-input-bg-focus: #F5F5F5;
 
-    --yt-color: #ff0033;
+        --yt-color: #ff0033;
 
-    /* Pixel variables */
-    --timeline-space: 100px;
+        /* Pixel variables */
+        --timeline-space: 100px;
 
-}
+    }
 
-// @property --test {
-//     syntax: "<percentage>";
-//     inherits: false;
-//     initial-value: 80%;
-// }
+    // @property --test {
+    //     syntax: "<percentage>";
+    //     inherits: false;
+    //     initial-value: 80%;
+    // }
 
-::backdrop {
-    --backdrop-bg-color: rgba(255, 255, 255, 0.5);
+    ::backdrop {
+        --backdrop-bg-color: rgba(255, 255, 255, 0.5);
 
-    --scrollbar-track-bg-color: white;
+        --scrollbar-track-bg-color: white;
 
-    --scrollbar-thumb-bg-color: #545454;
-    --scrollbar-thumb-bg-color--hover: #757575;
-    --scrollbar-thumb-bg-color--active: #b0b0b0;
+        --scrollbar-thumb-bg-color: #545454;
+        --scrollbar-thumb-bg-color--hover: #757575;
+        --scrollbar-thumb-bg-color--active: #b0b0b0;
+    }
 }
