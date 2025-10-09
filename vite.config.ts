@@ -1,9 +1,11 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tsconfigPaths from "vite-tsconfig-paths";
+import { tanstackRouter } from "@tanstack/router-plugin/vite";
 
 export default defineConfig(({ mode }) => ({
   plugins: [
+    tanstackRouter(), // Must be before react()
     react(),
     tsconfigPaths(), // Automatically uses paths from tsconfig.json
   ],
