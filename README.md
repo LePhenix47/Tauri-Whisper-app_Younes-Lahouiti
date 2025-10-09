@@ -34,6 +34,7 @@ This app processes audio/video files locally using Whisper AI to generate accura
   - [📚 Documentation](#-documentation)
   - [🚢 CI/CD Pipeline](#-cicd-pipeline)
   - [🌐 Deployment](#-deployment)
+    - [Desktop Distribution](#desktop-distribution)
   - [🤝 Contributing](#-contributing)
   - [📄 License](#-license)
   - [🔗 Additional Resources](#-additional-resources)
