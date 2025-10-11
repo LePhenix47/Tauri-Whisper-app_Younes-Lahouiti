@@ -22,11 +22,6 @@
 
   &.closed {
     width: 70px;
-
-    .sidebar-header h2,
-    .nav-text {
-      display: none;
-    }
   }
 }
 
@@ -55,9 +50,15 @@
 .sidebar-nav {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
   padding: 1rem;
   flex: 1;
+
+  ul {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    list-style: none;
+  }
 }
 
 .nav-link {
