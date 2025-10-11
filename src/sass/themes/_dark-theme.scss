@@ -1,4 +1,3 @@
-//CSS
 .dark {
     :root {
         --bg-primary: #0f0f0f;
@@ -22,15 +21,6 @@
         --scrollbar-thumb-bg-color: #ababab;
         --scrollbar-thumb-bg-color--hover: #8a8a8a;
         --scrollbar-thumb-bg-color--active: #4f4f4f;
-
-        --selection-bg: #838383;
-        --selection-color: white;
-
-        --ts-item-bg: black;
-        --ts-container-bg: #272727;
-
-        --ts-input-bg: #272727;
-        --ts-input-bg-focus: #272727;
     }
 
     ::backdrop {
@@ -41,5 +31,4 @@
         --scrollbar-thumb-bg-color--hover: #8a8a8a;
         --scrollbar-thumb-bg-color--active: #4f4f4f;
     }
-
 }

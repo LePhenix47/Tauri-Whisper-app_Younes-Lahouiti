@@ -1,58 +1,108 @@
+// ? Globally available variables regardless of the theme
+
+// * COLORS
 :root {
     --bg-active: #81818126;
 }
 
-.light {
-    :root {
-        --bg-primary: white;
-        --bg-secondary: #f9f9f9;
-        --bg-hover: #f0f0f0;
-        --bg-active: #e8e8e8;
+// * COLOR PALETTE
+:root {
+    // ? Blacks
+    --color-black-100: #0d0d0e;
+    --color-black-90: rgba(13, 13, 14, 90%);
+    --color-black-80: rgba(13, 13, 14, 80%);
+    --color-black-70: rgba(13, 13, 14, 70%);
+    --color-black-60: rgba(13, 13, 14, 60%);
+    --color-black-50: rgba(13, 13, 14, 50%);
+    --color-black-40: rgba(13, 13, 14, 40%);
+    --color-black-30: rgba(13, 13, 14, 30%);
+    --color-black-20: rgba(13, 13, 14, 20%);
+    --color-black-10: rgba(13, 13, 14, 10%);
 
-        --color-primary: #323232;
-        --color-primary--hover: #3c3c3c;
-        --color-primary--active: #474747;
-        --color-secondary: #757575;
+    // ? Whites
+    --color-white-100: #ffffff;
+    --color-white-90: rgba(255, 255, 255, 90%);
+    --color-white-80: rgba(255, 255, 255, 80%);
+    --color-white-70: rgba(255, 255, 255, 70%);
+    --color-white-60: rgba(255, 255, 255, 60%);
+    --color-white-50: rgba(255, 255, 255, 50%);
+    --color-white-40: rgba(255, 255, 255, 40%);
+    --color-white-30: rgba(255, 255, 255, 30%);
+    --color-white-20: rgba(255, 255, 255, 20%);
+    --color-white-10: rgba(255, 255, 255, 10%);
+}
 
-        --editor-bg-color: #F5F5F5;
-        --editor-pieces-bg-color: transparent;
+:root {
+    // ? Greys
+    --color-grey-900: #1c1f20;
+    --color-grey-800: #22292b;
+    --color-grey-700: #374343;
+    --color-grey-600: #515d5d;
+    --color-grey-500: #6e7e7e;
+    --color-grey-400: #9fadad;
+    --color-grey-300: #d4d9d9;
+    --color-grey-200: #e5eaea;
+    --color-grey-100: #f3f6f6;
+    --color-grey-50: #f9fbfb;
 
-        --semi-transparent-bg: rgba(255, 255, 255, 70%);
+    //  ? Reds
+    --color-red-900: #522b33;
+    --color-red-800: #622632;
+    --color-red-700: #9d213b;
+    --color-red-600: #bc1f40;
+    --color-red-500: #d41f45;
+    --color-red-400: #e13559;
+    --color-red-300: #e76c86;
+    --color-red-200: #f292a6;
+    --color-red-100: #f9cad4;
+    --color-red-50: #fdf0f3;
 
-        --border-color: #DBDBDB;
+    // ? Greens
+    --color-green-900: #1c4d27;
+    --color-green-800: #256533;
+    --color-green-700: #308242;
+    --color-green-600: #3da755;
+    --color-green-500: #43b75d;
+    --color-green-400: #69c57d;
+    --color-green-300: #81cf92;
+    --color-green-200: #a9deb4;
+    --color-green-100: #c5e9cd;
+    --color-green-50: #ecf8ef;
 
-        --scrollbar-track-bg-color: white;
+    // ? Yellows
+    --color-yellow-900: #6b4700;
+    --color-yellow-800: #8c5e00;
+    --color-yellow-700: #b57900;
+    --color-yellow-600: #e89b00;
+    --color-yellow-500: #ffaa00;
+    --color-yellow-400: #ffbb33;
+    --color-yellow-300: #ffc654;
+    --color-yellow-200: #ffd88a;
+    --color-yellow-100: #ffe5b0;
+    --color-yellow-50: #fff7e6;
 
-        --scrollbar-thumb-bg-color: #545454;
-        --scrollbar-thumb-bg-color--hover: #757575;
-        --scrollbar-thumb-bg-color--active: #b0b0b0;
+    // ? Blues
+    --color-blue-900: #003f6b;
+    --color-blue-800: #00528c;
+    --color-blue-700: #006ab5;
+    --color-blue-600: #0088e8;
+    --color-blue-500: #0095ff;
+    --color-blue-400: #33aaff;
+    --color-blue-300: #54b8ff;
+    --color-blue-200: #8aceff;
+    --color-blue-100: #b0deff;
+    --color-blue-50: #e6f4ff;
+}
 
-        --ts-item-bg: white;
-        --ts-container-bg: #f2f2f2;
 
-        --ts-input-bg: #F5F5F5;
-        --ts-input-bg-focus: #F5F5F5;
-
-        --yt-color: #ff0033;
-
-        /* Pixel variables */
-        --timeline-space: 100px;
-
-    }
-
-    // @property --test {
-    //     syntax: "<percentage>";
-    //     inherits: false;
-    //     initial-value: 80%;
-    // }
-
-    ::backdrop {
-        --backdrop-bg-color: rgba(255, 255, 255, 0.5);
-
-        --scrollbar-track-bg-color: white;
-
-        --scrollbar-thumb-bg-color: #545454;
-        --scrollbar-thumb-bg-color--hover: #757575;
-        --scrollbar-thumb-bg-color--active: #b0b0b0;
-    }
+// * BOX SHADOWS
+:root {
+    --box-shadow-100: 0px 2px 8px 0px rgba(13, 13, 14, 0.06);
+    --box-shadow-200: 0px 4px 12px 0px rgba(13, 13, 14, 0.08);
+    --box-shadow-300: 0px 4px 16px 0px rgba(19, 25, 39, 0.08);
+    --box-shadow-400: 0px 4px 12px 0px rgba(13, 13, 14, 0.1);
+    --box-shadow-500: 0px 4px 16px -2px rgba(13, 13, 14, 0.12);
+    --box-shadow-600: 0px 4px 18px 0px rgba(13, 13, 14, 0.12);
+    --box-shadow-700: 0px 6px 22px 0px rgba(13, 13, 14, 0.12);
+    --box-shadow-800: 0px 8px 28px 0px rgba(13, 13, 14, 0.12);
 }
