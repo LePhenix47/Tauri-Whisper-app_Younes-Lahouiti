@@ -1,5 +1,6 @@
 import { Button } from "@heroui/react";
-import { IoClose, IoPlay } from "react-icons/io5";
+import { IoClose, IoPlay, IoVideocam } from "react-icons/io5";
+import { AiTwotoneAudio } from "react-icons/ai";
 import { convertFileSrc } from "@tauri-apps/api/tauri";
 import "./FileDropzone.scss";
 
@@ -65,17 +66,9 @@ export function FilePreview({
 
       <div className="file-preview__media">
         {isAudio && (
-          <audio controls className="file-preview__audio">
-            <source src={fileUrl} />
-            Your browser does not support audio playback.
-          </audio>
+          <AiTwotoneAudio size={60} className="file-preview__audio" />
         )}
-        {isVideo && (
-          <video controls className="file-preview__video">
-            <source src={fileUrl} />
-            Your browser does not support video playback.
-          </video>
-        )}
+        {isVideo && <IoVideocam size={60} className="file-preview__video" />}
         {!isAudio && !isVideo && (
           <div className="file-preview__unsupported">
             <p>Preview not available for this file type</p>
