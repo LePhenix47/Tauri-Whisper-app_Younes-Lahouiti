@@ -12,6 +12,8 @@ function App() {
     const root = document.documentElement;
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
 
+    const abortController = new AbortController();
+
     const applyTheme = (currentTheme: "light" | "dark" | "system") => {
       const isDark =
         currentTheme === "dark" ||
@@ -31,8 +33,12 @@ function App() {
       applyTheme(theme);
     };
 
-    mediaQuery.addEventListener("change", handleChange);
-    return () => mediaQuery.removeEventListener("change", handleChange);
+    mediaQuery.addEventListener("change", handleChange, {
+      signal: abortController.signal,
+    });
+    return () => {
+      abortController.abort();
+    };
   }, [theme]);
 
   return (
