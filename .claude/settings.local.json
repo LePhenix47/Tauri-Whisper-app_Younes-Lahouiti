@@ -20,7 +20,9 @@
       "Bash(bun dlx storybook:*)",
       "Bash(npx storybook@latest init:*)",
       "Bash(npx tailwindcss init:*)",
-      "Bash(bun remove:*)"
+      "Bash(bun remove:*)",
+      "Bash(mv:*)",
+      "Bash(dir:*)"
     ],
     "deny": [],
     "ask": []

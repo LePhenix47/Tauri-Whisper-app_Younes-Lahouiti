@@ -16,6 +16,6 @@ function ModelsPage() {
   );
 }
 
-export const Route = createFileRoute("/models")({
+export const Route = createFileRoute("/models/")({
   component: ModelsPage,
 });

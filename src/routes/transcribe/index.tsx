@@ -1,21 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Card, CardHeader, CardBody } from "@heroui/react";
 
-function SettingsPage() {
+function TranscribePage() {
   return (
     <div>
       <Card>
         <CardHeader>
-          <h2>Settings</h2>
+          <h2>Transcribe Audio</h2>
         </CardHeader>
         <CardBody>
-          <p>Configure application settings.</p>
+          <p>Upload audio/video files for transcription.</p>
         </CardBody>
       </Card>
     </div>
   );
 }
 
-export const Route = createFileRoute("/settings")({
-  component: SettingsPage,
+export const Route = createFileRoute("/transcribe/")({
+  component: TranscribePage,
 });

@@ -167,6 +167,6 @@ function Index() {
   );
 }
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/(home)/")({
   component: Index,
 });

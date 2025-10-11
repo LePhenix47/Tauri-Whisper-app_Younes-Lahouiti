@@ -9,104 +9,104 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as TranscribeRouteImport } from './routes/transcribe'
-import { Route as SettingsRouteImport } from './routes/settings'
-import { Route as ModelsRouteImport } from './routes/models'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as TranscribeIndexRouteImport } from './routes/transcribe/index'
+import { Route as SettingsIndexRouteImport } from './routes/settings/index'
+import { Route as ModelsIndexRouteImport } from './routes/models/index'
+import { Route as homeIndexRouteImport } from './routes/(home)/index'
 
-const TranscribeRoute = TranscribeRouteImport.update({
-  id: '/transcribe',
-  path: '/transcribe',
+const TranscribeIndexRoute = TranscribeIndexRouteImport.update({
+  id: '/transcribe/',
+  path: '/transcribe/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SettingsRoute = SettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
+const SettingsIndexRoute = SettingsIndexRouteImport.update({
+  id: '/settings/',
+  path: '/settings/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ModelsRoute = ModelsRouteImport.update({
-  id: '/models',
-  path: '/models',
+const ModelsIndexRoute = ModelsIndexRouteImport.update({
+  id: '/models/',
+  path: '/models/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
+const homeIndexRoute = homeIndexRouteImport.update({
+  id: '/(home)/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/models': typeof ModelsRoute
-  '/settings': typeof SettingsRoute
-  '/transcribe': typeof TranscribeRoute
+  '/': typeof homeIndexRoute
+  '/models': typeof ModelsIndexRoute
+  '/settings': typeof SettingsIndexRoute
+  '/transcribe': typeof TranscribeIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/models': typeof ModelsRoute
-  '/settings': typeof SettingsRoute
-  '/transcribe': typeof TranscribeRoute
+  '/': typeof homeIndexRoute
+  '/models': typeof ModelsIndexRoute
+  '/settings': typeof SettingsIndexRoute
+  '/transcribe': typeof TranscribeIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/models': typeof ModelsRoute
-  '/settings': typeof SettingsRoute
-  '/transcribe': typeof TranscribeRoute
+  '/(home)/': typeof homeIndexRoute
+  '/models/': typeof ModelsIndexRoute
+  '/settings/': typeof SettingsIndexRoute
+  '/transcribe/': typeof TranscribeIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths: '/' | '/models' | '/settings' | '/transcribe'
   fileRoutesByTo: FileRoutesByTo
   to: '/' | '/models' | '/settings' | '/transcribe'
-  id: '__root__' | '/' | '/models' | '/settings' | '/transcribe'
+  id: '__root__' | '/(home)/' | '/models/' | '/settings/' | '/transcribe/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  ModelsRoute: typeof ModelsRoute
-  SettingsRoute: typeof SettingsRoute
-  TranscribeRoute: typeof TranscribeRoute
+  homeIndexRoute: typeof homeIndexRoute
+  ModelsIndexRoute: typeof ModelsIndexRoute
+  SettingsIndexRoute: typeof SettingsIndexRoute
+  TranscribeIndexRoute: typeof TranscribeIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/transcribe': {
-      id: '/transcribe'
+    '/transcribe/': {
+      id: '/transcribe/'
       path: '/transcribe'
       fullPath: '/transcribe'
-      preLoaderRoute: typeof TranscribeRouteImport
+      preLoaderRoute: typeof TranscribeIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/settings': {
-      id: '/settings'
+    '/settings/': {
+      id: '/settings/'
       path: '/settings'
       fullPath: '/settings'
-      preLoaderRoute: typeof SettingsRouteImport
+      preLoaderRoute: typeof SettingsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/models': {
-      id: '/models'
+    '/models/': {
+      id: '/models/'
       path: '/models'
       fullPath: '/models'
-      preLoaderRoute: typeof ModelsRouteImport
+      preLoaderRoute: typeof ModelsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
+    '/(home)/': {
+      id: '/(home)/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+      preLoaderRoute: typeof homeIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  ModelsRoute: ModelsRoute,
-  SettingsRoute: SettingsRoute,
-  TranscribeRoute: TranscribeRoute,
+  homeIndexRoute: homeIndexRoute,
+  ModelsIndexRoute: ModelsIndexRoute,
+  SettingsIndexRoute: SettingsIndexRoute,
+  TranscribeIndexRoute: TranscribeIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
