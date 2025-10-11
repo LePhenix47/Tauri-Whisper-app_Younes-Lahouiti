@@ -8,11 +8,11 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from './routes/__root'
-import { Route as TranscribeIndexRouteImport } from './routes/transcribe/index'
-import { Route as SettingsIndexRouteImport } from './routes/settings/index'
-import { Route as ModelsIndexRouteImport } from './routes/models/index'
-import { Route as homeIndexRouteImport } from './routes/(home)/index'
+import { Route as rootRouteImport } from './app/routes/__root'
+import { Route as TranscribeIndexRouteImport } from './app/routes/transcribe/index'
+import { Route as SettingsIndexRouteImport } from './app/routes/settings/index'
+import { Route as ModelsIndexRouteImport } from './app/routes/models/index'
+import { Route as homeIndexRouteImport } from './app/routes/(home)/index'
 
 const TranscribeIndexRoute = TranscribeIndexRouteImport.update({
   id: '/transcribe/',

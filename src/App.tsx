@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 import { Outlet } from "@tanstack/react-router";
 import { Select, SelectItem } from "@heroui/react";
-import { useAppStore } from "@app/stores/useAppStore";
-import { Sidebar } from "@/components/shared/Sidebar/Sidebar";
+import { useAppStore } from "@stores/useAppStore";
+import { Sidebar } from "@components/shared/Sidebar/Sidebar";
 
 function App() {
   // Theme logic - ONLY place where theme class is applied

@@ -5,7 +5,10 @@ import { tanstackRouter } from "@tanstack/router-plugin/vite";
 
 export default defineConfig(({ mode }) => ({
   plugins: [
-    tanstackRouter(), // Must be before react()
+    tanstackRouter({
+      routesDirectory: "./src/app/routes",
+      generatedRouteTree: "./src/routeTree.gen.ts",
+    }), // Must be before react()
     react(),
     tsconfigPaths(), // Automatically uses paths from tsconfig.json
   ],
