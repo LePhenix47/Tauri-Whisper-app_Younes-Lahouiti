@@ -8,9 +8,13 @@
 
   transition: width 0.3s ease;
 
-  z-index: 1000;
+  z-index: 5;
+
   display: flex;
   flex-direction: column;
+
+  position: sticky;
+  top: 0;
 
   &.open {
     width: 250px;
@@ -37,6 +41,10 @@
     font-size: 1.25rem;
     font-weight: 600;
     margin: 0;
+
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
   }
 
   .sidebar-toggle {
