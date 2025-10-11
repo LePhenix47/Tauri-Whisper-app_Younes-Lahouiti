@@ -23,6 +23,7 @@ function App() {
     };
 
     // Apply theme immediately
+
     applyTheme(theme);
 
     // Listen for OS theme changes when in system mode
@@ -45,16 +46,11 @@ function App() {
     <div className="app-layout">
       <Sidebar />
 
-      <div
+      <main
         className={`app-content ${sidebarOpen ? "sidebar-open" : "sidebar-closed"}`}
       >
-        <header className="app-header">
-          <h1>Tauri Whisper App</h1>
-        </header>
-        <main>
-          <Outlet />
-        </main>
-      </div>
+        <Outlet />
+      </main>
     </div>
   );
 }
