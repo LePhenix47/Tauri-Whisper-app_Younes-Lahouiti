@@ -42,20 +42,20 @@ No classes, no decorators, no complex config. Just:
 
 ## Real Example
 
-See [Card.stories.tsx](./ui/Card/Card.stories.tsx) for a complete example.
+See [Card.stories.tsx](./shared/Card/Card.stories.tsx) for a complete example.
 
 ## File Structure
 
 ```
-src/components/
-├── ui/                    # Reusable UI components
-│   ├── Button/
-│   │   ├── Button.tsx
-│   │   └── Button.stories.tsx
+src/app/components/
+├── shared/                # Reusable shared components
 │   ├── Card/
 │   │   ├── Card.tsx
 │   │   └── Card.stories.tsx
-└── README.md              # This file
+│   ├── Sidebar/
+│   │   ├── Sidebar.tsx
+│   │   └── Sidebar.stories.ts
+└── STORYBOOK.md           # This file
 ```
 
 ## Running Storybook
@@ -462,4 +462,4 @@ export const WithMockedBackend: Story = {
 
 - [Storybook Docs](https://storybook.js.org/docs/react/writing-stories/introduction)
 - [CSF3 Format](https://storybook.js.org/docs/react/api/csf)
-- [Example: Card Component](./ui/Card/Card.stories.tsx)
+- [Example: Card Component](./shared/Card/Card.stories.tsx)
