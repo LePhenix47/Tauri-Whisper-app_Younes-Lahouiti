@@ -86,6 +86,44 @@ fn test_whisper(app: AppHandle, model_name: String) -> Result<String, String> {
     }
 }
 
+#[tauri::command]
+async fn transcribe_file(
+    app: AppHandle,
+    file_path: String,
+    model_name: Option<String>,
+) -> Result<String, String> {
+    use whisper_rs::{WhisperContext, WhisperContextParameters, FullParams, SamplingStrategy};
+
+    // Use default model if none specified
+    let model = model_name.unwrap_or_else(|| "base".to_string());
+
+    // Get the model path
+    let models_dir = get_models_dir(app)?;
+    let model_path = PathBuf::from(&models_dir).join(format!("ggml-{}.bin", model));
+
+    // Check if model exists
+    if !model_path.exists() {
+        return Err(format!(
+            "Model '{}' not found. Please download it first.",
+            model
+        ));
+    }
+
+    // Check if file exists
+    let audio_path = PathBuf::from(&file_path);
+    if !audio_path.exists() {
+        return Err(format!("File not found: {}", file_path));
+    }
+
+    // TODO: Implement actual transcription
+    // For now, return placeholder response
+    Ok(format!(
+        "Transcription started for: {}\nUsing model: {}\n(Implementation pending)",
+        audio_path.display(),
+        model
+    ))
+}
+
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
@@ -93,6 +131,7 @@ fn main() {
             test_whisper,
             get_models_dir,
             download_model,
+            transcribe_file,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

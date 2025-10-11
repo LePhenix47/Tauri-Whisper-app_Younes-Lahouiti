@@ -13,9 +13,11 @@
   "tauri": {
     "allowlist": {
       "all": false,
-      "shell": {
-        "all": false,
-        "open": true
+      "dialog": {
+        "all": true
+      },
+      "fs": {
+        "all": true
       }
     },
     "bundle": {
@@ -28,7 +30,7 @@
     },
     "windows": [
       {
-        "fileDropEnabled": false,
+        "fileDropEnabled": true,
         "fullscreen": false,
         "resizable": true,
         "title": "Tauri Whisper App",
