@@ -1,4 +1,4 @@
-@use "../utils/" as *;
+@use "../../../../sass/utils/" as *;
 
 .sidebar {
   height: 100vh;
@@ -22,6 +22,11 @@
 
   &.closed {
     width: 70px;
+
+    .sidebar-header h2,
+    .nav-text {
+      display: none;
+    }
   }
 }
 
@@ -56,8 +61,15 @@
   ul {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 0.5rem;
     list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  li {
+    margin: 0;
+    padding: 0;
   }
 }
 

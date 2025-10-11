@@ -5,7 +5,14 @@ interface CardProps {
   children?: React.ReactNode;
 }
 
-export function Card({ title, description, variant = "default", children }: CardProps) {
+import "./Card.scss";
+
+export function Card({
+  title,
+  description,
+  variant = "default",
+  children,
+}: CardProps) {
   return (
     <div className={`card card--${variant}`}>
       <h3 className="card__title">{title}</h3>

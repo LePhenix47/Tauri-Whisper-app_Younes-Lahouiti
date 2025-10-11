@@ -6,6 +6,7 @@ import { MdPlaylistAdd, MdMic } from "react-icons/md";
 import { HiMenu } from "react-icons/hi";
 import type { IconType } from "react-icons";
 import type { FileRouteTypes } from "@/routeTree.gen";
+import "./Sidebar.scss";
 
 /**
  * The application sidebar component.
