@@ -6,10 +6,12 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
-use std::sync::Arc;
 use tauri::{AppHandle, Manager};
-use tokio::sync::{mpsc, Semaphore};
-use whisper_rs::{FullParams, SamplingStrategy, WhisperContext, WhisperContextParameters};
+use whisper_rs::{WhisperContext, WhisperContextParameters};
+
+mod whisper_rs_imp; // tells Rust to load src/whisper_rs_imp/mod.rs
+
+use whisper_rs_imp::transcriber::transcribe_single_pass;
 
 // ============================================================================
 // TYPES & STRUCTURES
@@ -54,12 +56,6 @@ struct TranscriptionResult {
     segments: Vec<SubtitleSegment>,
 }
 
-#[derive(Clone)]
-struct AudioChunk {
-    data: Vec<f32>,
-    offset_seconds: f64,
-}
-
 // ============================================================================
 // UTILITY FUNCTIONS
 // ============================================================================
@@ -67,7 +63,9 @@ struct AudioChunk {
 /// Convert audio to 16kHz mono WAV and get duration
 fn convert_audio_with_ffmpeg(input_path: &Path, output_path: &Path) -> Result<f64> {
     let input_str = input_path.to_str().context("Invalid input path encoding")?;
-    let output_str = output_path.to_str().context("Invalid output path encoding")?;
+    let output_str = output_path
+        .to_str()
+        .context("Invalid output path encoding")?;
 
     let duration_output = Command::new("ffprobe")
         .args([
@@ -111,147 +109,6 @@ fn convert_audio_with_ffmpeg(input_path: &Path, output_path: &Path) -> Result<f6
     }
 
     Ok(duration)
-}
-
-/// Read audio samples from WAV file
-fn read_audio_samples(wav_path: &Path) -> Result<Vec<f32>> {
-    let mut reader = hound::WavReader::open(wav_path).context("Failed to open WAV file")?;
-
-    let samples: Vec<f32> = reader
-        .samples::<i16>()
-        .filter_map(|s| s.ok())
-        .map(|s| s as f32 / 32768.0)
-        .collect();
-
-    Ok(samples)
-}
-
-/// Detect language from first 30 seconds of audio
-fn detect_language(model_path: &str, audio_data: &[f32], sample_rate: usize) -> Result<String> {
-    let sample_size = (30 * sample_rate).min(audio_data.len());
-    let sample = &audio_data[0..sample_size];
-
-    let ctx =
-        WhisperContext::new_with_params(model_path, WhisperContextParameters::default())
-            .context("Failed to load Whisper model for language detection")?;
-
-    let mut state = ctx
-        .create_state()
-        .context("Failed to create Whisper state")?;
-
-    let mut params = FullParams::new(SamplingStrategy::Greedy { best_of: 1 });
-    params.set_language(None);
-    params.set_print_progress(false);
-    params.set_print_special(false);
-
-    state
-        .full(params, sample)
-        .context("Language detection failed")?;
-
-    if let Some(_segment) = state.get_segment(0) {
-        return Ok("auto".to_string());
-    }
-
-    Ok("en".to_string())
-}
-
-/// Chunk audio data into overlapping segments
-fn chunk_audio(
-    audio_data: &[f32],
-    sample_rate: usize,
-    chunk_duration_secs: usize,
-    overlap_secs: usize,
-) -> Vec<AudioChunk> {
-    let chunk_size = chunk_duration_secs * sample_rate;
-    let overlap_size = overlap_secs * sample_rate;
-    let stride = chunk_size - overlap_size;
-
-    let mut chunks = Vec::new();
-    let mut start = 0;
-
-    while start < audio_data.len() {
-        let end = (start + chunk_size).min(audio_data.len());
-        let chunk_data = audio_data[start..end].to_vec();
-        let offset_seconds = (start as f64) / (sample_rate as f64);
-
-        chunks.push(AudioChunk {
-            data: chunk_data,
-            offset_seconds,
-        });
-
-        start += stride;
-
-        if end == audio_data.len() {
-            break;
-        }
-    }
-
-    chunks
-}
-
-/// Process a single chunk with its OWN WhisperContext
-async fn process_chunk(
-    chunk: AudioChunk,
-    model_path: Arc<String>,
-    language: Arc<String>,
-) -> Result<Vec<SubtitleSegment>> {
-    // CRITICAL: Each task gets its own context!
-    tokio::task::spawn_blocking(move || {
-        let ctx = WhisperContext::new_with_params(&model_path, WhisperContextParameters::default())
-            .context("Failed to load Whisper model for chunk")?;
-
-        let mut state = ctx
-            .create_state()
-            .context("Failed to create Whisper state")?;
-
-        // Use Greedy decoding for speed (5x faster than BeamSearch on CPU)
-        let mut params = FullParams::new(SamplingStrategy::Greedy { best_of: 1 });
-
-        params.set_language(if language.as_str() == "auto" {
-            None
-        } else {
-            Some(language.as_str())
-        });
-
-        // Disable ALL logging to eliminate terminal I/O bottleneck
-        params.set_print_progress(false);
-        params.set_print_special(false);
-        params.set_print_realtime(false);
-        params.set_print_timestamps(false);  // CRITICAL: Prevents per-token logging spam
-
-        params.set_temperature(0.0);
-        // NOTE: max_len=0 means no limit (default), which is correct for transcription
-        // DO NOT set max_len to 1 - that would fragment every word into separate segments!
-
-        state
-            .full(params, &chunk.data)
-            .context("Transcription failed")?;
-
-        let num_segments = state.full_n_segments();
-        let mut segments = Vec::new();
-
-        for i in 0..num_segments {
-            if let Some(segment) = state.get_segment(i) {
-                if let Ok(text) = segment.to_str_lossy() {
-                    let trimmed = text.trim();
-                    if !trimmed.is_empty() {
-                        segments.push(SubtitleSegment {
-                            index: i as usize,
-                            start_time: (segment.start_timestamp() as f64 / 100.0)
-                                + chunk.offset_seconds,
-                            end_time: (segment.end_timestamp() as f64 / 100.0)
-                                + chunk.offset_seconds,
-                            text: trimmed.to_string(),
-                        });
-                    }
-                }
-            }
-        }
-
-        Ok::<Vec<SubtitleSegment>, anyhow::Error>(segments)
-    })
-    .await
-    .context("Chunk processing task failed")?
 }
 
 /// Format timestamp for SRT (HH:MM:SS,mmm)
@@ -302,7 +159,7 @@ fn generate_vtt(segments: &[SubtitleSegment]) -> String {
 }
 
 // ============================================================================
-// MAIN TRANSCRIPTION LOGIC - TRULY CONCURRENT
+// MAIN TRANSCRIPTION LOGIC - SINGLE-PASS IMPLEMENTATION
 // ============================================================================
 
 #[tauri::command]
@@ -312,13 +169,9 @@ async fn transcribe_file_advanced(
     model_name: Option<String>,
     detect_language: Option<bool>,
 ) -> Result<TranscriptionResult, String> {
-    let result = transcribe_file_advanced_impl(
-        app,
-        file_path,
-        model_name,
-        detect_language.unwrap_or(true),
-    )
-    .await;
+    let result =
+        transcribe_file_advanced_impl(app, file_path, model_name, detect_language.unwrap_or(true))
+            .await;
 
     match result {
         Ok(res) => Ok(res),
@@ -330,7 +183,7 @@ async fn transcribe_file_advanced_impl(
     app: AppHandle,
     file_path: String,
     model_name: Option<String>,
-    auto_detect_language: bool,
+    _auto_detect_language: bool,
 ) -> Result<TranscriptionResult> {
     let model = model_name.unwrap_or_else(|| "base".to_string());
     let audio_path = PathBuf::from(&file_path);
@@ -339,29 +192,20 @@ async fn transcribe_file_advanced_impl(
         anyhow::bail!("File not found: {}", file_path);
     }
 
-    // Get model path
     let models_dir = get_models_dir_internal(&app)?;
     let model_path = models_dir.join(format!("ggml-{}.bin", model));
-
     if !model_path.exists() {
         anyhow::bail!("Model '{}' not found. Please download it first.", model);
     }
 
-    let model_path_str = model_path
-        .to_str()
-        .context("Invalid model path")?
-        .to_string();
-
-    // Setup temp directory
     let temp_dir = app
         .path_resolver()
         .app_data_dir()
         .context("Failed to get app data directory")?;
-
     fs::create_dir_all(&temp_dir).context("Failed to create temp directory")?;
     let temp_wav = temp_dir.join("temp_audio.wav");
 
-    // Emit progress: Converting
+    // Step 1: Convert audio to 16kHz mono WAV
     app.emit_all(
         "transcription-progress",
         TranscriptionProgress::Converting {
@@ -370,144 +214,50 @@ async fn transcribe_file_advanced_impl(
     )
     .ok();
 
-    // Convert audio and get duration
     let _duration = convert_audio_with_ffmpeg(&audio_path, &temp_wav)?;
 
-    // Read audio samples
-    let audio_data = read_audio_samples(&temp_wav)?;
-    let sample_rate = 16000;
-
-    // Language detection
-    let detected_language = if auto_detect_language {
-        app.emit_all(
-            "transcription-progress",
-            TranscriptionProgress::DetectingLanguage,
-        )
-        .ok();
-
-        let lang = detect_language(&model_path_str, &audio_data, sample_rate)?;
-
-        app.emit_all(
-            "transcription-progress",
-            TranscriptionProgress::LanguageDetected {
-                language: lang.clone(),
-            },
-        )
-        .ok();
-
-        lang
-    } else {
-        "en".to_string()
-    };
-
-    // Chunk audio
-    let chunks = chunk_audio(&audio_data, sample_rate, 30, 2);
-    let total_chunks = chunks.len();
-
-    // Progress tracking
-    let (progress_tx, mut progress_rx) = mpsc::channel::<usize>(total_chunks);
-
-    // Start progress listener task
-    let app_clone = app.clone();
-    tokio::spawn(async move {
-        let mut completed = 0;
-        while progress_rx.recv().await.is_some() {
-            completed += 1;
-            let progress = ((completed as f32 / total_chunks as f32) * 100.0) as u8;
-            app_clone
-                .emit_all(
-                    "transcription-progress",
-                    TranscriptionProgress::Transcribing { progress },
-                )
-                .ok();
-        }
-    });
-
+    // Step 2: Run single-pass transcription
     app.emit_all(
         "transcription-progress",
-        TranscriptionProgress::Transcribing { progress: 0 },
+        TranscriptionProgress::Transcribing { progress: 50 },
     )
     .ok();
 
-    // CRITICAL FIX: Limit concurrent contexts to avoid OOM
-    // Each WhisperContext loads ~500MB, so we limit to CPU core count
-    let max_concurrent = num_cpus::get().max(1);
-    let semaphore = Arc::new(Semaphore::new(max_concurrent));
+    let (language, segments) = tokio::task::spawn_blocking({
+        let model_path = model_path.clone();
+        let temp_wav = temp_wav.clone();
+        move || transcribe_single_pass(&model_path, &temp_wav)
+    })
+    .await
+    .context("Failed to spawn blocking Whisper task")??;
 
-    // Process chunks CONCURRENTLY - each with its own WhisperContext
-    let model_path_arc = Arc::new(model_path_str);
-    let language_arc = Arc::new(detected_language.clone());
-
-    let mut tasks = Vec::new();
-    for chunk in chunks {
-        let model_path = Arc::clone(&model_path_arc);
-        let language = Arc::clone(&language_arc);
-        let tx = progress_tx.clone();
-        let sem = Arc::clone(&semaphore);
-
-        let task = tokio::spawn(async move {
-            // Acquire semaphore permit - blocks if too many concurrent tasks
-            let _permit = sem.acquire().await.expect("Semaphore closed");
-
-            // PANIC RECOVERY: Always send progress even if chunk processing fails
-            let result = process_chunk(chunk, model_path, language).await;
-
-            // Report completion regardless of success/failure
-            let _ = tx.send(1).await;
-
-            result
-        });
-
-        tasks.push(task);
-    }
-
-    // Close the sender so the progress listener can finish
-    drop(progress_tx);
-
-    // Collect results
-    let mut all_segments = Vec::new();
-    for task in tasks {
-        let segments = task
-            .await
-            .context("Task join failed")??;
-        all_segments.extend(segments);
-    }
-
-    // Sort by start time
-    all_segments.sort_by(|a, b| a.start_time.partial_cmp(&b.start_time).unwrap());
-
-    // Re-index segments
-    let mut final_segments: Vec<SubtitleSegment> = all_segments
-        .into_iter()
-        .enumerate()
-        .map(|(idx, mut seg)| {
-            seg.index = idx;
-            seg
-        })
-        .collect();
-
-    // Merge overlapping segments
-    final_segments.dedup_by(|a, b| {
-        (a.start_time - b.start_time).abs() < 1.0 && a.text == b.text
-    });
-
-    // Generate subtitles
+    // Step 3: Format results
     app.emit_all(
         "transcription-progress",
         TranscriptionProgress::GeneratingSubtitles,
     )
     .ok();
 
+    let final_segments: Vec<SubtitleSegment> = segments
+        .iter()
+        .enumerate()
+        .map(|(idx, (start, end, text))| SubtitleSegment {
+            index: idx,
+            start_time: *start,
+            end_time: *end,
+            text: text.clone(),
+        })
+        .collect();
+
     let text = final_segments
         .iter()
         .map(|s| s.text.clone())
         .collect::<Vec<_>>()
         .join(" ");
-
     let srt = generate_srt(&final_segments);
     let vtt = generate_vtt(&final_segments);
 
-    // Cleanup
+    // Step 4: Cleanup
     let _ = fs::remove_file(&temp_wav);
 
     app.emit_all(
@@ -522,7 +272,7 @@ async fn transcribe_file_advanced_impl(
         text,
         subtitles_srt: srt,
         subtitles_vtt: vtt,
-        language: detected_language,
+        language,
         segments: final_segments,
     })
 }
@@ -600,10 +350,7 @@ fn test_whisper(app: AppHandle, model_name: String) -> Result<String, String> {
         .to_str()
         .ok_or_else(|| "Invalid model path encoding".to_string())?;
 
-    match WhisperContext::new_with_params(
-        model_path_str,
-        WhisperContextParameters::default(),
-    ) {
+    match WhisperContext::new_with_params(model_path_str, WhisperContextParameters::default()) {
         Ok(_ctx) => Ok(format!(
             "✅ Success! Model '{}' loaded correctly and is ready to use!",
             model_name
@@ -624,7 +371,6 @@ async fn transcribe_file(
         Err(e) => Err(e),
     }
 }
-
 // ============================================================================
 // MAIN
 // ============================================================================
