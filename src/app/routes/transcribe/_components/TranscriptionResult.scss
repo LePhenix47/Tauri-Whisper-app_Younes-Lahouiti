@@ -1,0 +1,100 @@
+@use "../../../../sass/utils/" as *;
+
+.transcription-result {
+  @include card-styling;
+  padding: 1.5rem;
+  margin-top: 1rem;
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  &__title {
+    font-size: 1.5rem;
+    font-weight: 500;
+    margin: 0;
+    color: var(--color-primary);
+  }
+
+  &__metadata {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+  }
+
+  &__meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  &__meta-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  &__meta-value {
+    font-size: 1rem;
+    color: var(--color-primary);
+    font-weight: 400;
+  }
+
+  &__content {
+    margin-bottom: 1.5rem;
+  }
+
+  &__section-title {
+    font-size: 1.125rem;
+    font-weight: 500;
+    margin-bottom: 0.75rem;
+    color: var(--color-primary);
+  }
+
+  &__text-box {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+
+  &__text {
+    margin: 0;
+    line-height: 1.6;
+    color: var(--color-primary);
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+
+    button {
+      flex: 1;
+      min-width: 150px;
+    }
+
+    @include mobile-only {
+      flex-direction: column;
+
+      button {
+        width: 100%;
+      }
+    }
+  }
+}

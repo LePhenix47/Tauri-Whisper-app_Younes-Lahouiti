@@ -2,6 +2,7 @@ import { Button } from "@heroui/react";
 import { IoClose, IoPlay, IoVideocam } from "react-icons/io5";
 import { AiTwotoneAudio } from "react-icons/ai";
 import { convertFileSrc } from "@tauri-apps/api/tauri";
+import type { TranscriptionProgress } from "@api/endpoints/transcription";
 import "./FileDropzone.scss";
 
 interface FilePreviewProps {
@@ -10,6 +11,8 @@ interface FilePreviewProps {
   onTranscribe: () => void;
   isTranscribing?: boolean;
   error?: string | null;
+  progress?: TranscriptionProgress | null;
+  startTime?: string | null;
 }
 
 export function FilePreview({
@@ -18,10 +21,9 @@ export function FilePreview({
   onTranscribe,
   isTranscribing = false,
   error = null,
+  progress = null,
+  startTime = null,
 }: FilePreviewProps) {
-  // Convert file system path to asset URL that Tauri can serve
-  const fileUrl = convertFileSrc(filePath);
-
   // Extract file name from path
   const fileName = filePath.split(/[\\/]/).pop() || filePath;
 
@@ -32,6 +34,34 @@ export function FilePreview({
 
   const isAudio = audioExtensions.includes(extension);
   const isVideo = videoExtensions.includes(extension);
+
+  // Format progress message
+  const getProgressMessage = () => {
+    if (!progress || !isTranscribing) return "Start Transcription";
+
+    switch (progress.type) {
+      case "converting":
+        return progress.message;
+      case "detecting_language":
+        return "Detecting language...";
+      case "language_detected":
+        return `Language detected: ${progress.language}`;
+      case "transcribing":
+        return `Transcribing... ${progress.progress}%`;
+      case "generating_subtitles":
+        return "Generating subtitles...";
+      case "complete":
+        return "Complete!";
+      default:
+        return "Processing...";
+    }
+  };
+
+  const getProgressPercentage = () => {
+    if (!progress || !isTranscribing) return 0;
+    if (progress.type === "transcribing") return progress.progress;
+    return undefined;
+  };
 
   return (
     <div className="file-preview">
@@ -86,7 +116,7 @@ export function FilePreview({
           startContent={!isTranscribing && <IoPlay size={20} />}
           className="file-preview__button-primary"
         >
-          {isTranscribing ? "Transcribing..." : "Start Transcription"}
+          {getProgressMessage()}
         </Button>
         <Button
           variant="flat"
@@ -99,10 +129,26 @@ export function FilePreview({
         </Button>
       </div>
 
-      {error && (
-        <div className="file-preview__error" role="alert">
-          ⚠️ {error}
+      {isTranscribing && startTime && (
+        <div className="file-preview__status">
+          <p className="file-preview__status-text">
+            Started at: {startTime}
+          </p>
+          {getProgressPercentage() !== undefined && (
+            <div className="file-preview__progress-bar">
+              <div
+                className="file-preview__progress-fill"
+                style={{ width: `${getProgressPercentage()}%` }}
+              />
+            </div>
+          )}
         </div>
+      )}
+
+      {error && (
+        <p className="file-preview__error" role="alert">
+          ⚠️ {error}
+        </p>
       )}
     </div>
   );

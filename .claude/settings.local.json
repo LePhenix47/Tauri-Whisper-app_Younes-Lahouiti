@@ -23,7 +23,8 @@
       "Bash(bun remove:*)",
       "Bash(mv:*)",
       "Bash(dir:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "WebFetch(domain:docs.rs)"
     ],
     "deny": [],
     "ask": []

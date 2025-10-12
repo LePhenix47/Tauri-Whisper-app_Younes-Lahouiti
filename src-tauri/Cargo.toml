@@ -18,6 +18,9 @@ ffmpeg-sidecar = "1.1"
 whisper-rs = { git = "https://codeberg.org/tazz4843/whisper-rs.git" }
 reqwest = { version = "0.12", features = ["blocking"] }
 tokio = { version = "1", features = ["full"] }
+hound = "3.5"
+anyhow = "1.0"
+num_cpus = "1.16"
 
 
 [features]
