@@ -26,7 +26,13 @@
       "Bash(npx tsc:*)",
       "WebFetch(domain:docs.rs)",
       "Bash(rmdir:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(bun update:*)",
+      "Bash(bun pm ls:*)",
+      "Bash(timeout 15 bun run dev)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(taskkill:*)"
     ],
     "deny": [],
     "ask": []

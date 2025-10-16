@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
-use tauri::{AppHandle, Manager};
+use tauri::{AppHandle, Emitter, Manager};
 use whisper_rs::{WhisperContext, WhisperContextParameters};
 
 mod whisper_rs_imp; // tells Rust to load src/whisper_rs_imp/mod.rs
@@ -199,14 +199,14 @@ async fn transcribe_file_advanced_impl(
     }
 
     let temp_dir = app
-        .path_resolver()
+        .path()
         .app_data_dir()
         .context("Failed to get app data directory")?;
     fs::create_dir_all(&temp_dir).context("Failed to create temp directory")?;
     let temp_wav = temp_dir.join("temp_audio.wav");
 
     // Step 1: Convert audio to 16kHz mono WAV
-    app.emit_all(
+    app.emit(
         "transcription-progress",
         TranscriptionProgress::Converting {
             message: "Converting audio to WAV format...".to_string(),
@@ -217,7 +217,7 @@ async fn transcribe_file_advanced_impl(
     let _duration = convert_audio_with_ffmpeg(&audio_path, &temp_wav)?;
 
     // Step 2: Run single-pass transcription
-    app.emit_all(
+    app.emit(
         "transcription-progress",
         TranscriptionProgress::Transcribing { progress: 50 },
     )
@@ -232,7 +232,7 @@ async fn transcribe_file_advanced_impl(
     .context("Failed to spawn blocking Whisper task")??;
 
     // Step 3: Format results
-    app.emit_all(
+    app.emit(
         "transcription-progress",
         TranscriptionProgress::GeneratingSubtitles,
     )
@@ -260,7 +260,7 @@ async fn transcribe_file_advanced_impl(
     // Step 4: Cleanup
     let _ = fs::remove_file(&temp_wav);
 
-    app.emit_all(
+    app.emit(
         "transcription-progress",
         TranscriptionProgress::Complete {
             subtitle_format: "SRT/VTT".to_string(),
@@ -288,7 +288,7 @@ fn hello_world() -> String {
 
 fn get_models_dir_internal(app: &AppHandle) -> Result<PathBuf> {
     let app_data_dir = app
-        .path_resolver()
+        .path()
         .app_data_dir()
         .context("Failed to get app data directory")?;
 
@@ -338,8 +338,8 @@ async fn download_model(app: AppHandle, model_name: String) -> Result<String, St
 fn list_downloaded_models(app: AppHandle) -> Result<Vec<String>, String> {
     let models_dir = get_models_dir_internal(&app).map_err(|e| format!("{:#}", e))?;
 
-    let entries = fs::read_dir(&models_dir)
-        .map_err(|e| format!("Failed to read models directory: {}", e))?;
+    let entries =
+        fs::read_dir(&models_dir).map_err(|e| format!("Failed to read models directory: {}", e))?;
 
     let mut models = Vec::new();
     for entry in entries {
@@ -405,6 +405,8 @@ async fn transcribe_file(
 
 fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![
             hello_world,
             test_whisper,

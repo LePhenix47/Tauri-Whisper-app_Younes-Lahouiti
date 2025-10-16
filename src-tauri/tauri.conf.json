@@ -2,41 +2,33 @@
   "build": {
     "beforeDevCommand": "bun run dev",
     "beforeBuildCommand": "bun run build",
-    "devPath": "http://localhost:1420",
-    "distDir": "../dist",
-    "withGlobalTauri": false
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:1420"
   },
-  "package": {
-    "productName": "Tauri Whisper App",
-    "version": "0.0.1"
+  "bundle": {
+    "active": true,
+    "targets": "all"
   },
-  "tauri": {
-    "allowlist": {
-      "all": false,
-      "dialog": {
-        "all": true
-      },
-      "fs": {
-        "all": true
-      }
-    },
-    "bundle": {
-      "active": true,
-      "targets": "all",
-      "identifier": "com.tauri-whisper.app"
-    },
-    "security": {
-      "csp": null
-    },
+  "productName": "Tauri Whisper App",
+  "mainBinaryName": "Tauri Whisper App",
+  "version": "0.0.1",
+  "identifier": "com.tauri-whisper.app",
+  "plugins": {},
+  "app": {
+    "withGlobalTauri": false,
     "windows": [
       {
-        "fileDropEnabled": true,
+        "dragDropEnabled": true,
         "fullscreen": false,
         "resizable": true,
         "title": "Tauri Whisper App",
         "width": 800,
-        "height": 600
+        "height": 600,
+        "useHttpsScheme": true
       }
-    ]
+    ],
+    "security": {
+      "csp": null
+    }
   }
 }

@@ -1,4 +1,4 @@
-import { invoke } from "@tauri-apps/api/tauri";
+import { invoke } from "@tauri-apps/api/core";
 
 export type ModelName = "tiny" | "base" | "small" | "medium" | "large-v3-turbo";
 

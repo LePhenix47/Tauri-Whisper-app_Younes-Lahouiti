@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { listen } from "@tauri-apps/api/event";
-import { open } from "@tauri-apps/api/dialog";
+import { getCurrentWebview } from "@tauri-apps/api/webview";
+import { open } from "@tauri-apps/plugin-dialog";
 import "./FileDropzone.scss";
 
 interface FileDropzoneProps {
@@ -18,13 +18,17 @@ export function FileDropzone({
   useEffect(() => {
     if (disabled) return;
 
-    // Listen for Tauri file drop events
+    // Listen for Tauri drag-and-drop events (v2 API)
     const setupListeners = async () => {
-      const unlistenDrop = await listen<string[]>(
-        "tauri://file-drop",
-        (event) => {
+      const unlisten = await getCurrentWebview().onDragDropEvent((event) => {
+        if (event.payload.type === "enter" || event.payload.type === "over") {
+          // User is hovering files over the window
+          setIsDragActive(true);
+        } else if (event.payload.type === "drop") {
+          // User dropped files
+          setIsDragActive(false);
           setError(null);
-          const filePaths = event.payload;
+          const filePaths = event.payload.paths;
 
           if (filePaths.length > 0) {
             // Validate file type by extension
@@ -54,29 +58,16 @@ export function FileDropzone({
             }
 
             // If multiple files, just take the first one
-            console.log(validFiles);
-
+            console.log("Dropped files:", validFiles);
             onFileSelect(validFiles[0]);
           }
-        }
-      );
-
-      const unlistenHover = await listen("tauri://file-drop-hover", () => {
-        setIsDragActive(true);
-      });
-
-      const unlistenCancelled = await listen(
-        "tauri://file-drop-cancelled",
-        () => {
+        } else if (event.payload.type === "leave") {
+          // User moved files away (drag cancelled)
           setIsDragActive(false);
         }
-      );
+      });
 
-      return () => {
-        unlistenDrop();
-        unlistenHover();
-        unlistenCancelled();
-      };
+      return unlisten;
     };
 
     const cleanup = setupListeners();
