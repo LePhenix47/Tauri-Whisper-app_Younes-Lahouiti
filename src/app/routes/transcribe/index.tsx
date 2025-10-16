@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { FileDropzone } from "./_components/FileDropzone";
-import { FilePreview } from "./_components/FilePreview";
-import { TranscriptionResult } from "./_components/TranscriptionResult";
+import { FileDropzone } from "@components/common/drag-and-drop/FileDropzone";
+import { FilePreview } from "@components/common/drag-and-drop/FilePreview";
+import { TranscriptionResult } from "@components/common/transcription/TranscriptionResult";
 import {
   transcribeFileAdvanced,
   type TranscriptionProgress,
