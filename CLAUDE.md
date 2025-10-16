@@ -8,7 +8,8 @@
 - **Frontend**: React + Vite + TypeScript + SASS
 - **Backend**: Rust (Tauri)
 - **Runtime**: Bun (preferred) / Node.js (fallback)
-- **Architecture**: Tauri v1.x (native webview, not Electron)
+- **Architecture**: Tauri v2.x (native webview, not Electron)
+- **Whisper Integration**: [whisper-rs](https://codeberg.org/tazz4843/whisper-rs) - Rust bindings for Whisper.cpp
 
 ### Development Philosophy
 - **Atomic development**: Build one micro-feature at a time, get approval before moving forward
@@ -282,6 +283,28 @@ taskkill /F /IM node.exe
 
 ---
 
+## Whisper Integration - CRITICAL REFERENCE
+
+**⚠️ IMPORTANT: When modifying transcription logic, ALWAYS check this repo first:**
+- **Repository**: https://codeberg.org/tazz4843/whisper-rs
+- **Purpose**: Official Rust bindings for Whisper.cpp
+- **Usage**: Check for API changes, new features, examples, and best practices
+- **Current usage**: `src-tauri/src/whisper_rs_imp/transcriber.rs`
+
+### Why This Matters
+- The whisper-rs API may evolve (breaking changes, new features)
+- Examples in the repo show optimal usage patterns
+- Documentation explains parameters, options, and performance tuning
+- Issues/discussions reveal known bugs and workarounds
+
+**Before making any transcription changes:**
+1. Check the latest whisper-rs repo for API updates
+2. Review examples for best practices
+3. Read recent issues for known problems
+4. Test changes with `cargo check` and real audio files
+
+---
+
 ## Notes for Claude
 
 - User prefers atomic, incremental development
@@ -291,8 +314,9 @@ taskkill /F /IM node.exe
 - Never run dev servers in background
 - Test Rust changes with `cargo check` before committing
 - ChatGPT provides direction, Claude implements
+- **CRITICAL**: Always reference https://codeberg.org/tazz4843/whisper-rs when working on transcription
 
 ---
 
-**Last Updated**: 2025-10-04
-**Version**: 0.0.1
+**Last Updated**: 2025-01-17 (Tauri v2 migration complete)
+**Version**: 0.1.0
