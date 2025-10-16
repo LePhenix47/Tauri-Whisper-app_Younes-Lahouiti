@@ -1,172 +1,112 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { Card, CardBody, Chip } from "@heroui/react";
 import {
-  Button,
-  Card,
-  CardBody,
-  CardHeader,
-  Input,
-  Select,
-  SelectItem,
-  Chip,
-  Progress,
-} from "@heroui/react";
+  IoDownloadOutline,
+  IoMicOutline,
+  IoSettingsOutline,
+} from "react-icons/io5";
 import env from "@env";
-import {
-  useDownloadModel,
-  useModelsDir,
-  useTestWhisper,
-} from "@app/hooks/useModels";
-import type { ModelName } from "@api/models";
+import { useModelsDir } from "@app/hooks/useModels";
 
-const MODELS: Array<{ name: ModelName; label: string; size: string }> = [
-  { name: "tiny", label: "Tiny", size: "77 MB" },
-  { name: "base", label: "Base (Recommended)", size: "148 MB" },
-  { name: "small", label: "Small", size: "488 MB" },
-  { name: "medium", label: "Medium", size: "1.5 GB" },
-  { name: "large-v3-turbo", label: "Large Turbo", size: "1.6 GB" },
-];
-
-function Index() {
-  const [selectedModel, setSelectedModel] = useState<ModelName>("base");
-
-  // TanStack Query hooks
+function HomePage() {
+  const navigate = useNavigate();
   const { data: modelsDir } = useModelsDir();
-  const downloadModelMutation = useDownloadModel();
-  const testWhisperMutation = useTestWhisper();
-
-  function handleDownload() {
-    downloadModelMutation.mutate(selectedModel);
-  }
-
-  function handleTestWhisper() {
-    testWhisperMutation.mutate(selectedModel);
-  }
 
   return (
-    <div className="">
-      <Card>
-        <CardHeader>
-          <div className="header-content">
-            <h1>Tauri Whisper App</h1>
-          </div>
-        </CardHeader>
-        <CardBody>
-          <div>
-            <p>Running on {env.REACT_APP_NODE_ENV}</p>
+    <div className="home-page">
+      {/* Welcome Section */}
+      <section className="home-page__welcome">
+        <h1 className="home-page__title">Welcome to Tauri Whisper</h1>
+        <p className="home-page__subtitle">
+          Transform your audio and video files into accurate transcriptions
+          using OpenAI's Whisper AI — all processed locally on your machine.
+        </p>
+      </section>
 
-            {/* HeroUI Component Tests */}
-            <div className="test-buttons">
-              <Button color="primary" variant="shadow">
-                Primary Button
-              </Button>
-              <Button color="secondary" variant="flat">
-                Secondary Button
-              </Button>
-              <Button color="success" variant="bordered">
-                Success Button
-              </Button>
-              <Button color="danger" isLoading>
-                Loading Button
-              </Button>
-              <Chip color="warning" variant="dot">
-                Status Chip
-              </Chip>
+      {/* Quick Action Cards */}
+      <section className="home-page__actions">
+        <h2 className="home-page__section-title">Quick Actions</h2>
+        <div className="home-page__cards-grid">
+          {/* Download Models Card */}
+          <Card
+            className="home-page__card"
+            isPressable
+            isHoverable
+            onPress={() => navigate({ to: "/models" })}
+          >
+            <CardBody>
+              <div className="home-page__card-icon home-page__card-icon--primary">
+                <IoDownloadOutline size={32} />
+              </div>
+              <h3 className="home-page__card-title">Download Models</h3>
+              <p className="home-page__card-description">
+                Download and manage Whisper AI models for offline transcription
+              </p>
+            </CardBody>
+          </Card>
+
+          {/* Transcribe Audio Card */}
+          <Card
+            className="home-page__card"
+            isPressable
+            isHoverable
+            onPress={() => navigate({ to: "/transcribe" })}
+          >
+            <CardBody>
+              <div className="home-page__card-icon home-page__card-icon--success">
+                <IoMicOutline size={32} />
+              </div>
+              <h3 className="home-page__card-title">Transcribe Audio</h3>
+              <p className="home-page__card-description">
+                Upload audio or video files and generate accurate subtitles
+              </p>
+            </CardBody>
+          </Card>
+
+          {/* Settings Card */}
+          <Card
+            className="home-page__card"
+            isPressable
+            isHoverable
+            onPress={() => navigate({ to: "/settings" })}
+          >
+            <CardBody>
+              <div className="home-page__card-icon home-page__card-icon--secondary">
+                <IoSettingsOutline size={32} />
+              </div>
+              <h3 className="home-page__card-title">Settings</h3>
+              <p className="home-page__card-description">
+                Configure app preferences and manage your workspace
+              </p>
+            </CardBody>
+          </Card>
+        </div>
+      </section>
+
+      {/* System Info */}
+      <section className="home-page__system-info">
+        <h2 className="home-page__section-title">System Information</h2>
+        <div className="home-page__info-grid">
+          <div className="home-page__info-item">
+            <span className="home-page__info-label">Environment:</span>
+            <Chip size="sm" variant="flat" color="primary">
+              {env.REACT_APP_NODE_ENV}
+            </Chip>
+          </div>
+          {modelsDir && (
+            <div className="home-page__info-item">
+              <span className="home-page__info-label">Models Directory:</span>
+              <span className="home-page__info-value" title={modelsDir}>
+                {modelsDir}
+              </span>
             </div>
-
-            <Input
-              label="Test Input"
-              placeholder="Enter something..."
-              variant="bordered"
-            />
-
-            <Progress
-              label="Progress Test"
-              value={65}
-              color="primary"
-              showValueLabel
-            />
-          </div>
-        </CardBody>
-      </Card>
-
-      <hr />
-
-      <Card>
-        <CardHeader>
-          <h2>Download Whisper Model</h2>
-        </CardHeader>
-        <CardBody>
-          {modelsDir && <p className="message">Models folder: {modelsDir}</p>}
-
-          <Select
-            label="Select Model"
-            placeholder="Choose a model"
-            selectedKeys={[selectedModel]}
-            onChange={(e) => setSelectedModel(e.target.value as ModelName)}
-            isDisabled={downloadModelMutation.isPending}
-          >
-            {MODELS.map((model) => (
-              <SelectItem key={model.name}>
-                {model.label} ({model.size})
-              </SelectItem>
-            ))}
-          </Select>
-
-          <Button
-            color="primary"
-            onPress={handleDownload}
-            isDisabled={downloadModelMutation.isPending}
-            isLoading={downloadModelMutation.isPending}
-          >
-            {downloadModelMutation.isPending
-              ? "Downloading..."
-              : "Download Model"}
-          </Button>
-
-          {downloadModelMutation.isSuccess && (
-            <Chip color="success" variant="flat">
-              {downloadModelMutation.data}
-            </Chip>
           )}
-          {downloadModelMutation.isError && (
-            <Chip color="danger" variant="flat">
-              Error: {downloadModelMutation.error.message}
-            </Chip>
-          )}
-        </CardBody>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <h2>Test Whisper</h2>
-        </CardHeader>
-        <CardBody>
-          <Button
-            color="secondary"
-            onPress={handleTestWhisper}
-            isDisabled={testWhisperMutation.isPending}
-            isLoading={testWhisperMutation.isPending}
-          >
-            {testWhisperMutation.isPending ? "Testing..." : "Test Whisper-RS"}
-          </Button>
-
-          {testWhisperMutation.isSuccess && (
-            <Chip color="success" variant="flat">
-              {testWhisperMutation.data}
-            </Chip>
-          )}
-          {testWhisperMutation.isError && (
-            <Chip color="danger" variant="flat">
-              Error: {testWhisperMutation.error.message}
-            </Chip>
-          )}
-        </CardBody>
-      </Card>
+        </div>
+      </section>
     </div>
   );
 }
 
 export const Route = createFileRoute("/(home)/")({
-  component: Index,
+  component: HomePage,
 });
