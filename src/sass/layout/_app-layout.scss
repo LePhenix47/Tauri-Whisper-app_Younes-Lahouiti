@@ -3,7 +3,8 @@
 .app-layout {
   display: grid;
   grid-template-columns: auto 1fr;
-  min-height: 100vh;
+  min-height: 100svh;
+  overflow: hidden;
   background: var(--bg-primary);
 
   @include mobile-only {
@@ -12,9 +13,14 @@
 }
 
 .app-content {
-  display: grid;
-  grid-template-rows: auto 1fr;
-  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  max-height: 100svh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
+
+  scrollbar-gutter: stable;
 }
 
 .app-header {
@@ -24,6 +30,7 @@
   padding: 1.5rem 2rem;
   background: var(--bg-secondary);
   border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
 
   h1 {
     font-size: 1.5rem;
@@ -39,5 +46,5 @@
 main {
   flex: 1;
   padding: 2rem;
-  overflow-y: auto;
+  min-height: 0;
 }

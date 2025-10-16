@@ -335,6 +335,34 @@ async fn download_model(app: AppHandle, model_name: String) -> Result<String, St
 }
 
 #[tauri::command]
+fn list_downloaded_models(app: AppHandle) -> Result<Vec<String>, String> {
+    let models_dir = get_models_dir_internal(&app).map_err(|e| format!("{:#}", e))?;
+
+    let entries = fs::read_dir(&models_dir)
+        .map_err(|e| format!("Failed to read models directory: {}", e))?;
+
+    let mut models = Vec::new();
+    for entry in entries {
+        if let Ok(entry) = entry {
+            let path = entry.path();
+            if path.is_file() {
+                if let Some(filename) = path.file_name() {
+                    if let Some(name) = filename.to_str() {
+                        // Only include .bin files that match the ggml-*.bin pattern
+                        if name.starts_with("ggml-") && name.ends_with(".bin") {
+                            models.push(name.to_string());
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    models.sort();
+    Ok(models)
+}
+
+#[tauri::command]
 fn test_whisper(app: AppHandle, model_name: String) -> Result<String, String> {
     let models_dir = get_models_dir_internal(&app).map_err(|e| format!("{:#}", e))?;
     let model_path = models_dir.join(format!("ggml-{}.bin", model_name));
@@ -382,6 +410,7 @@ fn main() {
             test_whisper,
             get_models_dir,
             download_model,
+            list_downloaded_models,
             transcribe_file,
             transcribe_file_advanced,
         ])
