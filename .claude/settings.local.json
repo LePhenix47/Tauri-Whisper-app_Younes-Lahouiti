@@ -25,7 +25,8 @@
       "Bash(dir:*)",
       "Bash(npx tsc:*)",
       "WebFetch(domain:docs.rs)",
-      "Bash(rmdir:*)"
+      "Bash(rmdir:*)",
+      "Bash(ls:*)"
     ],
     "deny": [],
     "ask": []
