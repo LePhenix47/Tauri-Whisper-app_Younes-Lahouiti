@@ -37,26 +37,25 @@ src/
 ┃ ┣ layout/ # Header, Footer, Sidebar, etc.
 ┃ ┗ feedback/ # Loaders, toasts, notifications
 ┃
-┣ api/ # Centralized API layer (requests, endpoints, TanStack Query setup)
+┣ api/ # Centralized API layer (Tauri commands, TanStack Query setup)
 ┃ ┣ client.ts
 ┃ ┣ endpoints/
-┃ ┃ ┣ user.ts
-┃ ┃ ┣ auth.ts
-┃ ┃ ┗ ...
+┃ ┃ ┣ models.ts         # Whisper model management
+┃ ┃ ┗ transcription.ts  # Transcription commands
 ┃ ┗ index.ts
 ┃
 ┣ assets/
 ┃ ┗ images/
 ┃ ┗ favicon/
 ┃
-┣ styles/ # Global styling (SASS)
+┣ sass/ # Global styling (SASS 7-1 pattern)
 ┃ ┣ base/ # Normalization, typography, reset
-┃ ┣ themes/ # Dark/light themes
-┃ ┣ utils/ # Mixins, variables, keyframes
-┃ ┣ components/ # Component-specific styles
-┃ ┣ layout/ # Header, footer, etc.
+┃ ┣ themes/ # Dark/light themes (auto via prefers-color-scheme)
+┃ ┣ utils/ # Mixins, variables, keyframes, functions
+┃ ┣ components/ # Component-specific styles (scrollbar, etc.)
+┃ ┣ layout/ # Header, footer, navigation
 ┃ ┣ pages/ # Page-specific overrides
-┃ ┗ main.scss
+┃ ┗ main.scss # Main entry point
 ┃
 ┣ env.ts
 ┣ App.tsx
@@ -102,11 +101,23 @@ This ensures **high cohesion** and **low coupling** — features can evolve inde
 
 ---
 
-### 5. **API Layer**
-- All requests go through `src/api/`.  
-- Each file in `api/endpoints/` corresponds to a domain (e.g., `auth.ts`, `user.ts`).  
-- TanStack Query may be used for caching and fetching logic.  
-- Never call `invoke()` or fetch directly from components.
+### 5. **API Layer (Tauri Commands)**
+- All Tauri backend calls go through `src/api/`.
+- Each file in `api/endpoints/` corresponds to a domain (e.g., `models.ts`, `transcription.ts`).
+- TanStack Query handles caching and async mutations.
+- Never call `invoke()` directly from components - always use API layer.
+
+**Example** (`src/api/endpoints/transcription.ts`):
+```typescript
+import { invoke } from "@tauri-apps/api/core";
+
+export async function transcribeFile(filePath: string, modelName?: string) {
+  return await invoke<TranscriptionResult>("transcribe_file_advanced", {
+    filePath,
+    modelName,
+  });
+}
+```
 
 ---
 
@@ -125,4 +136,4 @@ Vite aliases for cleaner imports:
 "@features/*"  → src/features
 "@components/*"→ src/components
 "@api/*"       → src/api
-"@styles/*"    → src/styles
+"@sass/*"      → src/sass

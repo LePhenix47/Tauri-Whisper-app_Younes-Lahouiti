@@ -124,31 +124,80 @@ sass/
 }
 ```
 
-3. RUST (TAURI BACKEND)
+3. RUST (TAURI V2 BACKEND)
 
 ### 3.1 EXAMPLE COMMAND
 
 ```rust
+use tauri::{AppHandle, Emitter, Manager};
+
 #[tauri::command]
-fn process_audio(file_path: String) -> Result<String, String> {
-    match do_processing(&file_path) {
-        Ok(result) => Ok(result),
-        Err(e) => Err(e.to_string()),
+async fn process_audio(app: AppHandle, file_path: String) -> Result<String, String> {
+    // Emit progress events to frontend
+    app.emit("progress", "Processing...").ok();
+
+    match do_processing(&file_path).await {
+        Ok(result) => {
+            app.emit("complete", &result).ok();
+            Ok(result)
+        },
+        Err(e) => Err(format!("{:#}", e)),
     }
 }
 ```
 
-### 3.2 RULES
+### 3.2 TAURI V2 API PATTERNS
+
+**Path Resolution** (v2):
+```rust
+// ❌ OLD v1
+app.path_resolver().app_data_dir();
+
+// ✅ NEW v2
+app.path().app_data_dir();
+```
+
+**Event Emission** (v2):
+```rust
+use tauri::Emitter;  // Required import!
+
+// ❌ OLD v1
+app.emit_all("event-name", payload);
+
+// ✅ NEW v2
+app.emit("event-name", payload);
+```
+
+**Plugins** (v2):
+```rust
+fn main() {
+    tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_fs::init())
+        .invoke_handler(tauri::generate_handler![process_audio])
+        .run(tauri::generate_context!())
+        .expect("error while running tauri application");
+}
+```
+
+### 3.3 RULES
 
 ✅ DO:
 
-- Use Result<T, E> for fallible operations.
-- Convert errors to strings for frontend consumption.
-- Keep each command small and focused.
+- Use `Result<T, E>` for fallible operations
+- Convert errors to strings for frontend: `format!("{:#}", e)`
+- Keep each command small and focused
+- Use `tokio::task::spawn_blocking` for CPU-intensive work
+- Import `Emitter` trait when using `app.emit()`
+- Use `anyhow::Context` for error context
+- Use `app.path()` for path resolution (v2)
 
 ❌ DON'T:
 
-- Use unwrap() or expect() in production.
+- Use `unwrap()` or `expect()` in production
+- Block the main thread with heavy computation
+- Forget to import `Emitter` trait when emitting events
+- Use deprecated v1 APIs (`emit_all`, `path_resolver`)
 
 4. GIT STANDARDS
 
@@ -251,4 +300,4 @@ E2E Tests       | Core user flows, subtitle generation
 
 Potential Storybook integration for UI testing.
 
-LAST UPDATED: 2025-10-04
+LAST UPDATED: 2025-01-17 (Tauri v2 migration)
