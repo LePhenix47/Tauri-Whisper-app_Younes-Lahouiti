@@ -1,46 +1,48 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
 import { FileDropzone } from "@components/common/drag-and-drop/FileDropzone";
 import { FilePreview } from "@components/common/drag-and-drop/FilePreview";
 import { TranscriptionResult } from "@components/common/transcription/TranscriptionResult";
 import {
   transcribeFileAdvanced,
   type TranscriptionProgress,
-  type TranscribeAdvancedResponse,
 } from "@api/endpoints/transcription";
+import { useTranscriptionStore } from "@app/stores/useTranscriptionStore";
 
 function TranscribePage() {
-  const [selectedFilePath, setSelectedFilePath] = useState<string | null>(null);
-  const [isTranscribing, setIsTranscribing] = useState(false);
-  const [transcriptionError, setTranscriptionError] = useState<string | null>(
-    null
-  );
-  const [progress, setProgress] = useState<TranscriptionProgress | null>(null);
-  const [result, setResult] = useState<TranscribeAdvancedResponse | null>(null);
-  const [startTime, setStartTime] = useState<string | null>(null);
-  const [endTime, setEndTime] = useState<string | null>(null);
+  // Get state from Zustand store (persisted across route changes)
+  const selectedFilePath = useTranscriptionStore((state) => state.selectedFilePath);
+  const isTranscribing = useTranscriptionStore((state) => state.isTranscribing);
+  const error = useTranscriptionStore((state) => state.error);
+  const progress = useTranscriptionStore((state) => state.progress);
+  const result = useTranscriptionStore((state) => state.result);
+  const startTime = useTranscriptionStore((state) => state.startTime);
+  const endTime = useTranscriptionStore((state) => state.endTime);
+
+  // Get actions from store
+  const setSelectedFile = useTranscriptionStore((state) => state.setSelectedFile);
+  const setTranscribing = useTranscriptionStore((state) => state.setTranscribing);
+  const setProgress = useTranscriptionStore((state) => state.setProgress);
+  const setError = useTranscriptionStore((state) => state.setError);
+  const setResult = useTranscriptionStore((state) => state.setResult);
+  const setStartTime = useTranscriptionStore((state) => state.setStartTime);
+  const setEndTime = useTranscriptionStore((state) => state.setEndTime);
+  const clearAll = useTranscriptionStore((state) => state.clearAll);
+  const clearResultsOnly = useTranscriptionStore((state) => state.clearResultsOnly);
 
   const handleFileSelect = (filePath: string) => {
-    setSelectedFilePath(filePath);
-    setTranscriptionError(null);
-    setResult(null);
-    setProgress(null);
+    setSelectedFile(filePath);
+    clearResultsOnly(); // Clear previous results but keep file
   };
 
   const handleClear = () => {
-    setSelectedFilePath(null);
-    setTranscriptionError(null);
-    setResult(null);
-    setProgress(null);
-    setStartTime(null);
-    setEndTime(null);
+    clearAll(); // Clear everything including file
   };
 
   const handleTranscribe = async () => {
     if (!selectedFilePath) return;
 
-    setIsTranscribing(true);
-    setTranscriptionError(null);
+    setTranscribing(true);
+    setError(null);
     setResult(null);
     setProgress(null);
     setStartTime(new Date().toLocaleString());
@@ -51,19 +53,19 @@ function TranscribePage() {
         selectedFilePath,
         "base",
         true,
-        (progressUpdate) => {
+        (progressUpdate: TranscriptionProgress) => {
           setProgress(progressUpdate);
         }
       );
 
       setResult(transcriptionResult);
       setEndTime(new Date().toLocaleString());
-    } catch (error) {
-      setTranscriptionError(
-        error instanceof Error ? error.message : "Failed to start transcription"
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to start transcription"
       );
     } finally {
-      setIsTranscribing(false);
+      setTranscribing(false);
       setProgress(null);
     }
   };
@@ -93,7 +95,7 @@ function TranscribePage() {
           onClear={handleClear}
           onTranscribe={handleTranscribe}
           isTranscribing={isTranscribing}
-          error={transcriptionError}
+          error={error}
           progress={progress}
           startTime={startTime}
         />
