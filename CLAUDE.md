@@ -305,6 +305,30 @@ taskkill /F /IM node.exe
 
 ---
 
+## Required Documentation - READ FIRST
+
+**⚠️ MANDATORY: Before starting ANY task, check these files:**
+
+- **[docs/stack.md](docs/stack.md)** - Current tech stack (Tauri v2, React, Rust, whisper-rs)
+- **[docs/architecture.md](docs/architecture.md)** - Frontend folder structure, feature organization, API layer patterns
+- **[docs/coding-standards.md](docs/coding-standards.md)** - TypeScript/React/SASS/Rust conventions, naming, BEM, Tauri v2 patterns
+- **[docs/development-guide.md](docs/development-guide.md)** - Dev workflow, commands, troubleshooting, Tauri v2 migration notes
+- **[docs/roadmap.md](docs/roadmap.md)** - Project phases, completed features, current status
+
+**Why this matters:**
+- These docs contain critical context that overrides general assumptions
+- They're updated after each major change (like Tauri v2 migration)
+- Ignoring them leads to wrong approaches and wasted work
+
+**When to check which doc:**
+- Architecture changes → `architecture.md`
+- Styling/naming questions → `coding-standards.md`
+- Build errors → `development-guide.md`
+- Feature planning → `roadmap.md`
+- Dependency questions → `stack.md`
+
+---
+
 ## Notes for Claude
 
 - User prefers atomic, incremental development
@@ -315,6 +339,7 @@ taskkill /F /IM node.exe
 - Test Rust changes with `cargo check` before committing
 - ChatGPT provides direction, Claude implements
 - **CRITICAL**: Always reference https://codeberg.org/tazz4843/whisper-rs when working on transcription
+- **CRITICAL**: Check `/docs` folder documentation before suggesting solutions
 
 ---
 
