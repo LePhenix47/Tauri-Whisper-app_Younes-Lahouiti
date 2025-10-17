@@ -1,7 +1,6 @@
 import { Button } from "@heroui/react";
 import { IoClose, IoPlay, IoVideocam } from "react-icons/io5";
 import { AiTwotoneAudio } from "react-icons/ai";
-import { convertFileSrc } from "@tauri-apps/api/core";
 import type { TranscriptionProgress } from "@api/endpoints/transcription";
 import "./FileDropzone.scss";
 

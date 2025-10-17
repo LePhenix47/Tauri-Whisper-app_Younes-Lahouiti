@@ -146,6 +146,7 @@ function TranscribePage() {
           language={result.language}
           startTime={startTime || "N/A"}
           endTime={endTime || "N/A"}
+          mediaFilePath={selectedFilePath || undefined}
           onReset={handleClear}
         />
       ) : !selectedFilePath ? (

@@ -1,5 +1,7 @@
 import { Button } from "@heroui/react";
 import { IoDownload, IoRefresh } from "react-icons/io5";
+import { TranscriptionPreview } from "./TranscriptionPreview";
+import { downloadTextFile } from "@app/utils/fileToBlob";
 import "./TranscriptionResult.scss";
 
 interface TranscriptionResultProps {
@@ -9,6 +11,7 @@ interface TranscriptionResultProps {
   language: string;
   startTime: string;
   endTime: string;
+  mediaFilePath?: string;
   onReset: () => void;
 }
 
@@ -19,16 +22,19 @@ export function TranscriptionResult({
   language,
   startTime,
   endTime,
+  mediaFilePath,
   onReset,
 }: TranscriptionResultProps) {
-  const handleDownload = (content: string, filename: string) => {
-    const blob = new Blob([content], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    a.click();
-    URL.revokeObjectURL(url);
+  const handleDownloadTranscript = () => {
+    downloadTextFile(text, "transcription.txt", "text/plain");
+  };
+
+  const handleDownloadSrt = () => {
+    downloadTextFile(subtitlesSrt, "subtitles.srt", "text/plain");
+  };
+
+  const handleDownloadVtt = () => {
+    downloadTextFile(subtitlesVtt, "subtitles.vtt", "text/vtt");
   };
 
   return (
@@ -60,6 +66,15 @@ export function TranscriptionResult({
         </div>
       </div>
 
+      {/* Media Preview with Subtitles */}
+      {mediaFilePath && (
+        <TranscriptionPreview
+          mediaFilePath={mediaFilePath}
+          subtitlesVtt={subtitlesVtt}
+          language={language}
+        />
+      )}
+
       <div className="transcription-result__content">
         <h3 className="transcription-result__section-title">Transcription</h3>
         <div className="transcription-result__text-box">
@@ -71,7 +86,7 @@ export function TranscriptionResult({
         <Button
           color="primary"
           size="lg"
-          onPress={() => handleDownload(subtitlesSrt, "subtitles.srt")}
+          onPress={handleDownloadSrt}
           startContent={<IoDownload size={20} />}
         >
           Download SRT
@@ -80,7 +95,7 @@ export function TranscriptionResult({
           color="primary"
           variant="flat"
           size="lg"
-          onPress={() => handleDownload(subtitlesVtt, "subtitles.vtt")}
+          onPress={handleDownloadVtt}
           startContent={<IoDownload size={20} />}
         >
           Download VTT
@@ -88,7 +103,7 @@ export function TranscriptionResult({
         <Button
           variant="bordered"
           size="lg"
-          onPress={() => handleDownload(text, "transcription.txt")}
+          onPress={handleDownloadTranscript}
           startContent={<IoDownload size={20} />}
         >
           Download Text

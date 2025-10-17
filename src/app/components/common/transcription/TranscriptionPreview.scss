@@ -1,0 +1,98 @@
+@use "../../../../sass/utils/" as *;
+
+.transcription-preview {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background-color: var(--bg-secondary, #f8f9fa);
+  border-radius: 12px;
+  border: 1px solid var(--border-color, #e0e0e0);
+
+  &__title {
+    margin: 0 0 1rem;
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: var(--color-primary, #333);
+  }
+
+  &__player-wrapper {
+    position: relative;
+    width: 100%;
+    margin-bottom: 1rem;
+    background-color: #000;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  &__video {
+    display: block;
+    width: 100%;
+    max-height: 500px;
+    aspect-ratio: 16 / 9;
+    object-fit: contain;
+  }
+
+  &__audio {
+    display: block;
+    width: 100%;
+    height: 54px;
+  }
+
+  &__hint {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--color-secondary, #666);
+    text-align: center;
+  }
+
+  // Loading state
+  &--loading {
+    @include center-flex(1rem);
+    min-height: 200px;
+    padding: 3rem;
+  }
+
+  // Error state
+  &--error {
+    @include center-flex(0.5rem);
+    flex-direction: column;
+    min-height: 150px;
+    padding: 2rem;
+    background-color: var(--bg-danger, #fff5f5);
+    border-color: var(--color-danger, #ff4444);
+  }
+
+  &__error-message {
+    margin: 0 0 0.5rem;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--color-danger, #ff4444);
+  }
+
+  &__error-hint {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--color-secondary, #666);
+  }
+
+  // Dark theme overrides
+  @media (prefers-color-scheme: dark) {
+    background-color: var(--bg-secondary-dark, #1e1e1e);
+    border-color: var(--border-color-dark, #333);
+
+    &__title {
+      color: var(--color-primary-dark, #e0e0e0);
+    }
+
+    &__hint {
+      color: var(--color-secondary-dark, #aaa);
+    }
+
+    &--error {
+      background-color: rgba(255, 68, 68, 0.1);
+    }
+
+    &__error-hint {
+      color: var(--color-secondary-dark, #aaa);
+    }
+  }
+}
