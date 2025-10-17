@@ -25,7 +25,9 @@ const AVAILABLE_MODELS: Array<{
 
 function TranscribePage() {
   // Get state from Zustand store (persisted across route changes)
-  const selectedFilePath = useTranscriptionStore((state) => state.selectedFilePath);
+  const selectedFilePath = useTranscriptionStore(
+    (state) => state.selectedFilePath
+  );
   const selectedModel = useTranscriptionStore((state) => state.selectedModel);
   const isTranscribing = useTranscriptionStore((state) => state.isTranscribing);
   const error = useTranscriptionStore((state) => state.error);
@@ -35,16 +37,24 @@ function TranscribePage() {
   const endTime = useTranscriptionStore((state) => state.endTime);
 
   // Get actions from store
-  const setSelectedFile = useTranscriptionStore((state) => state.setSelectedFile);
-  const setSelectedModel = useTranscriptionStore((state) => state.setSelectedModel);
-  const setTranscribing = useTranscriptionStore((state) => state.setTranscribing);
+  const setSelectedFile = useTranscriptionStore(
+    (state) => state.setSelectedFile
+  );
+  const setSelectedModel = useTranscriptionStore(
+    (state) => state.setSelectedModel
+  );
+  const setTranscribing = useTranscriptionStore(
+    (state) => state.setTranscribing
+  );
   const setProgress = useTranscriptionStore((state) => state.setProgress);
   const setError = useTranscriptionStore((state) => state.setError);
   const setResult = useTranscriptionStore((state) => state.setResult);
   const setStartTime = useTranscriptionStore((state) => state.setStartTime);
   const setEndTime = useTranscriptionStore((state) => state.setEndTime);
   const clearAll = useTranscriptionStore((state) => state.clearAll);
-  const clearResultsOnly = useTranscriptionStore((state) => state.clearResultsOnly);
+  const clearResultsOnly = useTranscriptionStore(
+    (state) => state.clearResultsOnly
+  );
 
   // Get downloaded models
   const { data: downloadedModelsRaw = [] } = useListModels();
@@ -100,6 +110,66 @@ function TranscribePage() {
     isModelDownloaded(model.name)
   );
 
+  // Helper: Get model selector description
+  const getModelDescription = (): string => {
+    if (downloadedModels.length === 0) {
+      return "No models downloaded. Visit the Models page to download one.";
+    }
+
+    const modelWord = downloadedModels.length === 1 ? "model" : "models";
+    return `${downloadedModels.length} ${modelWord} available`;
+  };
+
+  // Helper: Get error message if no models
+  const getModelErrorMessage = (): string | null => {
+    if (downloadedModels.length === 0 && selectedFilePath) {
+      return "Please download a model first";
+    }
+    return null;
+  };
+
+  // Helper: Render main content based on state
+  const renderContent = () => {
+    // Show results if transcription is complete
+    if (result) {
+      return (
+        <TranscriptionResult
+          text={result.text}
+          subtitlesSrt={result.subtitles_srt}
+          subtitlesVtt={result.subtitles_vtt}
+          language={result.language}
+          startTime={startTime || "N/A"}
+          endTime={endTime || "N/A"}
+          mediaFilePath={selectedFilePath || undefined}
+          onReset={handleClear}
+        />
+      );
+    }
+
+    // Show dropzone if no file selected
+    if (!selectedFilePath) {
+      return (
+        <FileDropzone
+          onFileSelect={handleFileSelect}
+          disabled={isTranscribing}
+        />
+      );
+    }
+
+    // Show file preview with transcribe button
+    return (
+      <FilePreview
+        filePath={selectedFilePath}
+        onClear={handleClear}
+        onTranscribe={handleTranscribe}
+        isTranscribing={isTranscribing}
+        error={error}
+        progress={progress}
+        startTime={startTime}
+      />
+    );
+  };
+
   return (
     <div style={{ maxWidth: "800px", margin: "0 auto" }}>
       <h1 style={{ marginBottom: "2rem" }}>Transcribe Audio</h1>
@@ -113,20 +183,14 @@ function TranscribePage() {
             selectedKeys={[selectedModel]}
             onChange={(e) => setSelectedModel(e.target.value as ModelName)}
             isDisabled={isTranscribing}
-            description={
-              downloadedModels.length === 0
-                ? "No models downloaded. Visit the Models page to download one."
-                : `${downloadedModels.length} model${downloadedModels.length !== 1 ? "s" : ""} available`
-            }
-            errorMessage={
-              downloadedModels.length === 0 && selectedFilePath
-                ? "Please download a model first"
-                : undefined
-            }
+            description={getModelDescription()}
+            errorMessage={getModelErrorMessage()}
           >
             {downloadedModels.map((model) => (
               <SelectItem key={model.name} textValue={model.label}>
-                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <div
+                  style={{ display: "flex", justifyContent: "space-between" }}
+                >
                   <span>{model.label}</span>
                   <span style={{ fontSize: "0.875rem", opacity: 0.7 }}>
                     {model.size}
@@ -138,33 +202,7 @@ function TranscribePage() {
         </div>
       )}
 
-      {result ? (
-        <TranscriptionResult
-          text={result.text}
-          subtitlesSrt={result.subtitles_srt}
-          subtitlesVtt={result.subtitles_vtt}
-          language={result.language}
-          startTime={startTime || "N/A"}
-          endTime={endTime || "N/A"}
-          mediaFilePath={selectedFilePath || undefined}
-          onReset={handleClear}
-        />
-      ) : !selectedFilePath ? (
-        <FileDropzone
-          onFileSelect={handleFileSelect}
-          disabled={isTranscribing}
-        />
-      ) : (
-        <FilePreview
-          filePath={selectedFilePath}
-          onClear={handleClear}
-          onTranscribe={handleTranscribe}
-          isTranscribing={isTranscribing}
-          error={error}
-          progress={progress}
-          startTime={startTime}
-        />
-      )}
+      {renderContent()}
     </div>
   );
 }

@@ -8,14 +8,14 @@ import {
 } from "@app/utils/fileToBlob";
 import "./TranscriptionPreview.scss";
 
-interface TranscriptionPreviewProps {
+type TranscriptionPreviewProps = {
   /** Original media file path */
   mediaFilePath: string;
   /** VTT subtitle content */
   subtitlesVtt: string;
   /** Detected language code (e.g., "en", "fr") */
   language: string;
-}
+};
 
 export function TranscriptionPreview({
   mediaFilePath,
@@ -81,6 +81,7 @@ export function TranscriptionPreview({
     };
   }, [mediaFilePath, subtitlesVtt]);
 
+  // Early return: Loading state
   if (isLoading) {
     return (
       <div className="transcription-preview transcription-preview--loading">
@@ -89,12 +90,11 @@ export function TranscriptionPreview({
     );
   }
 
+  // Early return: Error state
   if (error) {
     return (
       <div className="transcription-preview transcription-preview--error">
-        <p className="transcription-preview__error-message">
-          ⚠️ {error}
-        </p>
+        <p className="transcription-preview__error-message">⚠️ {error}</p>
         <p className="transcription-preview__error-hint">
           The media file may have been moved or deleted.
         </p>
@@ -102,15 +102,22 @@ export function TranscriptionPreview({
     );
   }
 
+  // Early return: Invalid URLs
   if (!mediaUrl || !subtitleUrl) {
     return null;
   }
+
+  // Determine hint message
+  const hintMessage =
+    mediaType === "video"
+      ? "Subtitles are enabled by default. Use the CC button to toggle them."
+      : "Audio preview with synchronized subtitles below.";
 
   return (
     <div className="transcription-preview">
       <h3 className="transcription-preview__title">Media Preview</h3>
       <div className="transcription-preview__player-wrapper">
-        {mediaType === "video" ? (
+        {mediaType === "video" && (
           <video
             className="transcription-preview__video"
             src={mediaUrl}
@@ -126,7 +133,9 @@ export function TranscriptionPreview({
             />
             Your browser does not support video playback.
           </video>
-        ) : (
+        )}
+
+        {mediaType === "audio" && (
           <audio
             className="transcription-preview__audio"
             src={mediaUrl}
@@ -137,11 +146,7 @@ export function TranscriptionPreview({
           </audio>
         )}
       </div>
-      <p className="transcription-preview__hint">
-        {mediaType === "video"
-          ? "Subtitles are enabled by default. Use the CC button to toggle them."
-          : "Audio preview with synchronized subtitles below."}
-      </p>
+      <p className="transcription-preview__hint">{hintMessage}</p>
     </div>
   );
 }

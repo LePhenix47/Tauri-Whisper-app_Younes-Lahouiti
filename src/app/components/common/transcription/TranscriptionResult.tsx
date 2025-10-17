@@ -4,7 +4,7 @@ import { TranscriptionPreview } from "./TranscriptionPreview";
 import { downloadTextFile } from "@app/utils/fileToBlob";
 import "./TranscriptionResult.scss";
 
-interface TranscriptionResultProps {
+type TranscriptionResultProps = {
   text: string;
   subtitlesSrt: string;
   subtitlesVtt: string;
@@ -13,7 +13,7 @@ interface TranscriptionResultProps {
   endTime: string;
   mediaFilePath?: string;
   onReset: () => void;
-}
+};
 
 export function TranscriptionResult({
   text,

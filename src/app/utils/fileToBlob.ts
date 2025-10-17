@@ -39,7 +39,12 @@ function getMimeType(filePath: string): string {
 export function getMediaType(filePath: string): "video" | "audio" {
   const extension = filePath.split(".").pop()?.toLowerCase() || "";
   const videoExtensions = ["mp4", "webm", "ogg", "mov", "avi", "mkv"];
-  return videoExtensions.includes(extension) ? "video" : "audio";
+
+  if (videoExtensions.includes(extension)) {
+    return "video";
+  }
+
+  return "audio";
 }
 
 /**
