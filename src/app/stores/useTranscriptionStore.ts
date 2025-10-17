@@ -4,6 +4,7 @@ import type {
   TranscriptionProgress,
   TranscribeAdvancedResponse,
 } from "@api/endpoints/transcription";
+import type { ModelName } from "@api/models";
 
 /**
  * Transcription state store
@@ -16,6 +17,7 @@ import type {
 interface TranscriptionState {
   // File state
   selectedFilePath: string | null;
+  selectedModel: ModelName;
 
   // Transcription state
   isTranscribing: boolean;
@@ -29,6 +31,7 @@ interface TranscriptionState {
 
   // Actions
   setSelectedFile: (filePath: string | null) => void;
+  setSelectedModel: (model: ModelName) => void;
   setTranscribing: (isTranscribing: boolean) => void;
   setProgress: (progress: TranscriptionProgress | null) => void;
   setError: (error: string | null) => void;
@@ -41,6 +44,7 @@ interface TranscriptionState {
 
 const initialState = {
   selectedFilePath: null,
+  selectedModel: "base" as ModelName,
   isTranscribing: false,
   progress: null,
   error: null,
@@ -58,6 +62,8 @@ export const useTranscriptionStore = create<TranscriptionState>()(
         // Actions
         setSelectedFile: (filePath) =>
           set({ selectedFilePath: filePath, error: null }),
+
+        setSelectedModel: (model) => set({ selectedModel: model }),
 
         setTranscribing: (isTranscribing) => set({ isTranscribing }),
 
@@ -87,6 +93,7 @@ export const useTranscriptionStore = create<TranscriptionState>()(
         partialize: (state) => ({
           // Persist everything except transient states
           selectedFilePath: state.selectedFilePath,
+          selectedModel: state.selectedModel,
           result: state.result,
           startTime: state.startTime,
           endTime: state.endTime,

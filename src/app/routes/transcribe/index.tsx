@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Select, SelectItem } from "@heroui/react";
 import { FileDropzone } from "@components/common/drag-and-drop/FileDropzone";
 import { FilePreview } from "@components/common/drag-and-drop/FilePreview";
 import { TranscriptionResult } from "@components/common/transcription/TranscriptionResult";
@@ -7,10 +8,25 @@ import {
   type TranscriptionProgress,
 } from "@api/endpoints/transcription";
 import { useTranscriptionStore } from "@app/stores/useTranscriptionStore";
+import { useListModels } from "@app/hooks/useModels";
+import type { ModelName } from "@api/models";
+
+const AVAILABLE_MODELS: Array<{
+  name: ModelName;
+  label: string;
+  size: string;
+}> = [
+  { name: "tiny", label: "Tiny", size: "77 MB" },
+  { name: "base", label: "Base", size: "148 MB" },
+  { name: "small", label: "Small", size: "488 MB" },
+  { name: "medium", label: "Medium", size: "1.5 GB" },
+  { name: "large-v3-turbo", label: "Large V3 Turbo", size: "1.6 GB" },
+];
 
 function TranscribePage() {
   // Get state from Zustand store (persisted across route changes)
   const selectedFilePath = useTranscriptionStore((state) => state.selectedFilePath);
+  const selectedModel = useTranscriptionStore((state) => state.selectedModel);
   const isTranscribing = useTranscriptionStore((state) => state.isTranscribing);
   const error = useTranscriptionStore((state) => state.error);
   const progress = useTranscriptionStore((state) => state.progress);
@@ -20,6 +36,7 @@ function TranscribePage() {
 
   // Get actions from store
   const setSelectedFile = useTranscriptionStore((state) => state.setSelectedFile);
+  const setSelectedModel = useTranscriptionStore((state) => state.setSelectedModel);
   const setTranscribing = useTranscriptionStore((state) => state.setTranscribing);
   const setProgress = useTranscriptionStore((state) => state.setProgress);
   const setError = useTranscriptionStore((state) => state.setError);
@@ -28,6 +45,9 @@ function TranscribePage() {
   const setEndTime = useTranscriptionStore((state) => state.setEndTime);
   const clearAll = useTranscriptionStore((state) => state.clearAll);
   const clearResultsOnly = useTranscriptionStore((state) => state.clearResultsOnly);
+
+  // Get downloaded models
+  const { data: downloadedModelsRaw = [] } = useListModels();
 
   const handleFileSelect = (filePath: string) => {
     setSelectedFile(filePath);
@@ -51,7 +71,7 @@ function TranscribePage() {
     try {
       const transcriptionResult = await transcribeFileAdvanced(
         selectedFilePath,
-        "base",
+        selectedModel,
         true,
         (progressUpdate: TranscriptionProgress) => {
           setProgress(progressUpdate);
@@ -70,9 +90,53 @@ function TranscribePage() {
     }
   };
 
+  const isModelDownloaded = (modelName: ModelName) => {
+    return downloadedModelsRaw.some((model) =>
+      model.toLowerCase().includes(modelName)
+    );
+  };
+
+  const downloadedModels = AVAILABLE_MODELS.filter((model) =>
+    isModelDownloaded(model.name)
+  );
+
   return (
     <div style={{ maxWidth: "800px", margin: "0 auto" }}>
       <h1 style={{ marginBottom: "2rem" }}>Transcribe Audio</h1>
+
+      {/* Model Selector */}
+      {!result && (
+        <div style={{ marginBottom: "1.5rem" }}>
+          <Select
+            label="Whisper Model"
+            placeholder="Select a model"
+            selectedKeys={[selectedModel]}
+            onChange={(e) => setSelectedModel(e.target.value as ModelName)}
+            isDisabled={isTranscribing}
+            description={
+              downloadedModels.length === 0
+                ? "No models downloaded. Visit the Models page to download one."
+                : `${downloadedModels.length} model${downloadedModels.length !== 1 ? "s" : ""} available`
+            }
+            errorMessage={
+              downloadedModels.length === 0 && selectedFilePath
+                ? "Please download a model first"
+                : undefined
+            }
+          >
+            {downloadedModels.map((model) => (
+              <SelectItem key={model.name} textValue={model.label}>
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  <span>{model.label}</span>
+                  <span style={{ fontSize: "0.875rem", opacity: 0.7 }}>
+                    {model.size}
+                  </span>
+                </div>
+              </SelectItem>
+            ))}
+          </Select>
+        </div>
+      )}
 
       {result ? (
         <TranscriptionResult
