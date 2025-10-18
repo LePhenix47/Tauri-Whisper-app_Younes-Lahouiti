@@ -32,7 +32,8 @@
       "Bash(timeout 15 bun run dev)",
       "Bash(netstat:*)",
       "Bash(findstr:*)",
-      "Bash(taskkill:*)"
+      "Bash(taskkill:*)",
+      "Bash(move:*)"
     ],
     "deny": [],
     "ask": []

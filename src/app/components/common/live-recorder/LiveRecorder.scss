@@ -1,0 +1,151 @@
+@use "../../../../sass/utils/" as *;
+
+/**
+ * LiveRecorder Component Styles
+ * Clean, minimal UI for real-time microphone recording with waveform
+ * Layout: Large waveform at top, controls underneath
+ */
+
+.live-recorder {
+  @include center-flex-column(2rem);
+  padding: 2rem;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+
+  &__title {
+    font-size: 1.75rem;
+    font-weight: 500;
+    margin: 0;
+    color: var(--color-primary);
+    align-self: flex-start;
+  }
+
+  &__waveform-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    background-color: var(--bg-primary, #ffffff);
+    border: 2px solid var(--border-color, #e0e0e0);
+    border-radius: 12px;
+    overflow: hidden;
+    min-height: 200px;
+    transition: border-color 0.3s ease;
+
+    &:has(.live-recorder__waveform--active) {
+      border-color: rgb(100, 149, 237);
+      box-shadow: 0 0 0 4px rgba(100, 149, 237, 0.1);
+    }
+  }
+
+  &__waveform {
+    width: 100%;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+
+    &--active {
+      opacity: 1;
+    }
+  }
+
+  &__placeholder {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: var(--color-secondary, #666);
+    font-size: 1rem;
+    text-align: center;
+    pointer-events: none;
+    opacity: 0.7;
+  }
+
+  &__controls {
+    @include center-flex-column(1rem);
+    width: 100%;
+    align-items: center;
+  }
+
+  &__playback {
+    @include center-flex-column(1.5rem);
+    width: 100%;
+    padding: 2rem;
+    background-color: var(--bg-secondary, #f8f9fa);
+    border-radius: 12px;
+  }
+
+  &__playback-title {
+    font-size: 1.25rem;
+    font-weight: 500;
+    margin: 0;
+    color: var(--color-primary);
+  }
+
+  &__playback-waveform-wrapper {
+    width: 100%;
+    background-color: var(--bg-primary, #ffffff);
+    border: 2px solid var(--border-color, #e0e0e0);
+    border-radius: 8px;
+    overflow: hidden;
+    padding: 0.5rem;
+  }
+
+  &__playback-waveform {
+    width: 100%;
+  }
+
+  &__playback-controls {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+/**
+ * Dark theme support
+ */
+@media (prefers-color-scheme: dark) {
+  .live-recorder {
+    &__waveform-wrapper {
+      background-color: var(--bg-primary, #1a1a1a);
+      border-color: var(--border-color, #444);
+    }
+
+    &__placeholder {
+      color: var(--color-secondary, #aaa);
+    }
+
+    &__playback {
+      background-color: var(--bg-secondary, #2d2d2d);
+    }
+
+    &__playback-waveform-wrapper {
+      background-color: var(--bg-primary, #1a1a1a);
+      border-color: var(--border-color, #444);
+    }
+  }
+}
+
+/**
+ * Responsive adjustments
+ */
+@include mobile-only {
+  .live-recorder {
+    padding: 1rem;
+
+    &__title {
+      font-size: 1.5rem;
+    }
+
+    &__waveform-wrapper {
+      min-height: 120px;
+    }
+
+    &__controls {
+      width: 100%;
+    }
+  }
+}

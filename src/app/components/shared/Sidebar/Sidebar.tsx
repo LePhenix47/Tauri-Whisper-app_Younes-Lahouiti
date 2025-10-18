@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Button } from "@heroui/react";
 import { useAppStore } from "@app/stores/useAppStore";
 import { IoHome, IoSettings } from "react-icons/io5";
-import { MdPlaylistAdd, MdMic } from "react-icons/md";
+import { MdPlaylistAdd, MdMic, MdRadio } from "react-icons/md";
 import { HiMenu } from "react-icons/hi";
 import type { IconType } from "react-icons";
 import type { FileRouteTypes } from "@/routeTree.gen";
@@ -29,6 +29,7 @@ export function Sidebar() {
     { to: "/", label: "Home", icon: IoHome },
     { to: "/models", label: "Models", icon: MdPlaylistAdd },
     { to: "/transcribe", label: "Transcribe", icon: MdMic },
+    // { to: "/live-recorder", label: "Live Recorder", icon: MdRadio },
     { to: "/settings", label: "Settings", icon: IoSettings },
   ];
 

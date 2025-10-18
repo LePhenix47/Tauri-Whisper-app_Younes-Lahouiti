@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './app/routes/__root'
 import { Route as TranscribeIndexRouteImport } from './app/routes/transcribe/index'
 import { Route as SettingsIndexRouteImport } from './app/routes/settings/index'
 import { Route as ModelsIndexRouteImport } from './app/routes/models/index'
+import { Route as LiveRecorderIndexRouteImport } from './app/routes/live-recorder/index'
 import { Route as homeIndexRouteImport } from './app/routes/(home)/index'
 
 const TranscribeIndexRoute = TranscribeIndexRouteImport.update({
@@ -29,6 +30,11 @@ const ModelsIndexRoute = ModelsIndexRouteImport.update({
   path: '/models/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LiveRecorderIndexRoute = LiveRecorderIndexRouteImport.update({
+  id: '/live-recorder/',
+  path: '/live-recorder/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const homeIndexRoute = homeIndexRouteImport.update({
   id: '/(home)/',
   path: '/',
@@ -37,12 +43,14 @@ const homeIndexRoute = homeIndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof homeIndexRoute
+  '/live-recorder': typeof LiveRecorderIndexRoute
   '/models': typeof ModelsIndexRoute
   '/settings': typeof SettingsIndexRoute
   '/transcribe': typeof TranscribeIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof homeIndexRoute
+  '/live-recorder': typeof LiveRecorderIndexRoute
   '/models': typeof ModelsIndexRoute
   '/settings': typeof SettingsIndexRoute
   '/transcribe': typeof TranscribeIndexRoute
@@ -50,20 +58,28 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/(home)/': typeof homeIndexRoute
+  '/live-recorder/': typeof LiveRecorderIndexRoute
   '/models/': typeof ModelsIndexRoute
   '/settings/': typeof SettingsIndexRoute
   '/transcribe/': typeof TranscribeIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/models' | '/settings' | '/transcribe'
+  fullPaths: '/' | '/live-recorder' | '/models' | '/settings' | '/transcribe'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/models' | '/settings' | '/transcribe'
-  id: '__root__' | '/(home)/' | '/models/' | '/settings/' | '/transcribe/'
+  to: '/' | '/live-recorder' | '/models' | '/settings' | '/transcribe'
+  id:
+    | '__root__'
+    | '/(home)/'
+    | '/live-recorder/'
+    | '/models/'
+    | '/settings/'
+    | '/transcribe/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   homeIndexRoute: typeof homeIndexRoute
+  LiveRecorderIndexRoute: typeof LiveRecorderIndexRoute
   ModelsIndexRoute: typeof ModelsIndexRoute
   SettingsIndexRoute: typeof SettingsIndexRoute
   TranscribeIndexRoute: typeof TranscribeIndexRoute
@@ -92,6 +108,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ModelsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/live-recorder/': {
+      id: '/live-recorder/'
+      path: '/live-recorder'
+      fullPath: '/live-recorder'
+      preLoaderRoute: typeof LiveRecorderIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/(home)/': {
       id: '/(home)/'
       path: '/'
@@ -104,6 +127,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   homeIndexRoute: homeIndexRoute,
+  LiveRecorderIndexRoute: LiveRecorderIndexRoute,
   ModelsIndexRoute: ModelsIndexRoute,
   SettingsIndexRoute: SettingsIndexRoute,
   TranscribeIndexRoute: TranscribeIndexRoute,
