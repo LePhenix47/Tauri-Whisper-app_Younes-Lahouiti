@@ -131,7 +131,7 @@ export function FilePreview({
       {isTranscribing && startTime && (
         <div className="file-preview__status">
           <p className="file-preview__status-text">
-            Started at: {startTime}
+            Started at: {new Date(startTime).toLocaleString()}
           </p>
           {getProgressPercentage() !== undefined && (
             <div className="file-preview__progress-bar">

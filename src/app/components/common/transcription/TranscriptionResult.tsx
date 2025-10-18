@@ -2,6 +2,10 @@ import { Button } from "@heroui/react";
 import { IoDownload, IoRefresh } from "react-icons/io5";
 import { TranscriptionPreview } from "./TranscriptionPreview";
 import { downloadTextFile } from "@app/utils/fileToBlob";
+import {
+  calculateDurationInSeconds,
+  formatVideoTimeStamp,
+} from "@app/utils/timeFormat";
 import "./TranscriptionResult.scss";
 
 type TranscriptionResultProps = {
@@ -37,6 +41,14 @@ export function TranscriptionResult({
     downloadTextFile(subtitlesVtt, "subtitles.vtt", "text/vtt");
   };
 
+  // Calculate duration
+  const durationInSeconds = calculateDurationInSeconds(startTime, endTime);
+
+  const formattedDuration =
+    durationInSeconds !== null
+      ? formatVideoTimeStamp(durationInSeconds)
+      : "N/A";
+
   return (
     <div className="transcription-result">
       <div className="transcription-result__header">
@@ -58,11 +70,21 @@ export function TranscriptionResult({
         </div>
         <div className="transcription-result__meta-item">
           <span className="transcription-result__meta-label">Started:</span>
-          <span className="transcription-result__meta-value">{startTime}</span>
+          <span className="transcription-result__meta-value">
+            {new Date(startTime).toLocaleString()}
+          </span>
         </div>
         <div className="transcription-result__meta-item">
           <span className="transcription-result__meta-label">Completed:</span>
-          <span className="transcription-result__meta-value">{endTime}</span>
+          <span className="transcription-result__meta-value">
+            {new Date(endTime).toLocaleString()}
+          </span>
+        </div>
+        <div className="transcription-result__meta-item">
+          <span className="transcription-result__meta-label">Duration:</span>
+          <span className="transcription-result__meta-value">
+            {formattedDuration}
+          </span>
         </div>
       </div>
 

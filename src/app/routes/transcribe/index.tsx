@@ -75,7 +75,7 @@ function TranscribePage() {
     setError(null);
     setResult(null);
     setProgress(null);
-    setStartTime(new Date().toLocaleString());
+    setStartTime(new Date().toISOString());
     setEndTime(null);
 
     try {
@@ -89,7 +89,7 @@ function TranscribePage() {
       );
 
       setResult(transcriptionResult);
-      setEndTime(new Date().toLocaleString());
+      setEndTime(new Date().toISOString());
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to start transcription"
@@ -171,7 +171,7 @@ function TranscribePage() {
   };
 
   return (
-    <div style={{ maxWidth: "800px", margin: "0 auto" }}>
+    <section>
       <h1 style={{ marginBottom: "2rem" }}>Transcribe Audio</h1>
 
       {/* Model Selector */}
@@ -203,7 +203,7 @@ function TranscribePage() {
       )}
 
       {renderContent()}
-    </div>
+    </section>
   );
 }
 
