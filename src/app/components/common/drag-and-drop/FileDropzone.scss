@@ -199,6 +199,7 @@
 }
 
 .file-preview__progress-fill {
+  width: var(--progress-width, 0%);
   height: 100%;
   background: linear-gradient(90deg, var(--color-blue-500), var(--color-blue-600));
   border-radius: 4px;

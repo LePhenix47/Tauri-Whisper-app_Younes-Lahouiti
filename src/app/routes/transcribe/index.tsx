@@ -10,6 +10,7 @@ import {
 import { useTranscriptionStore } from "@app/stores/useTranscriptionStore";
 import { useListModels } from "@app/hooks/useModels";
 import type { ModelName } from "@api/models";
+import "./index.scss";
 
 const AVAILABLE_MODELS: Array<{
   name: ModelName;
@@ -171,12 +172,12 @@ function TranscribePage() {
   };
 
   return (
-    <section>
-      <h1 style={{ marginBottom: "2rem" }}>Transcribe Audio</h1>
+    <section className="transcribe-page">
+      <h1 className="transcribe-page__title">Transcribe Audio</h1>
 
       {/* Model Selector */}
       {!result && (
-        <div style={{ marginBottom: "1.5rem" }}>
+        <div className="transcribe-page__model-selector">
           <Select
             label="Whisper Model"
             placeholder="Select a model"
@@ -188,11 +189,9 @@ function TranscribePage() {
           >
             {downloadedModels.map((model) => (
               <SelectItem key={model.name} textValue={model.label}>
-                <div
-                  style={{ display: "flex", justifyContent: "space-between" }}
-                >
+                <div className="transcribe-page__model-item">
                   <span>{model.label}</span>
-                  <span style={{ fontSize: "0.875rem", opacity: 0.7 }}>
+                  <span className="transcribe-page__model-size">
                     {model.size}
                   </span>
                 </div>

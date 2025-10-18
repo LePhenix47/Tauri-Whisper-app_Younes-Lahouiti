@@ -134,11 +134,11 @@ export function FilePreview({
             Started at: {new Date(startTime).toLocaleString()}
           </p>
           {getProgressPercentage() !== undefined && (
-            <div className="file-preview__progress-bar">
-              <div
-                className="file-preview__progress-fill"
-                style={{ width: `${getProgressPercentage()}%` }}
-              />
+            <div
+              className="file-preview__progress-bar"
+              style={{ "--progress-width": `${getProgressPercentage()}%` } as React.CSSProperties}
+            >
+              <div className="file-preview__progress-fill" />
             </div>
           )}
         </div>
