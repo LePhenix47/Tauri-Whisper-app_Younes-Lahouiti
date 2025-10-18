@@ -183,7 +183,7 @@ async fn transcribe_file_advanced_impl(
     app: AppHandle,
     file_path: String,
     model_name: Option<String>,
-    _auto_detect_language: bool,
+    auto_detect_language: bool,
 ) -> Result<TranscriptionResult> {
     let model = model_name.unwrap_or_else(|| "base".to_string());
     let audio_path = PathBuf::from(&file_path);
@@ -226,10 +226,19 @@ async fn transcribe_file_advanced_impl(
     let (language, segments) = tokio::task::spawn_blocking({
         let model_path = model_path.clone();
         let temp_wav = temp_wav.clone();
-        move || transcribe_single_pass(&model_path, &temp_wav)
+        move || transcribe_single_pass(&model_path, &temp_wav, auto_detect_language)
     })
     .await
     .context("Failed to spawn blocking Whisper task")??;
+
+    // Emit language detection result
+    app.emit(
+        "transcription-progress",
+        TranscriptionProgress::LanguageDetected {
+            language: language.clone(),
+        },
+    )
+    .ok();
 
     // Step 3: Format results
     app.emit(

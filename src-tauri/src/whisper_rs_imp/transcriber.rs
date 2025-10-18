@@ -5,8 +5,12 @@ use whisper_rs::{FullParams, SamplingStrategy, WhisperContext, WhisperContextPar
 /// Transcribe a single WAV audio file using whisper_rs.
 ///
 /// Requirements:
-/// - WAV must be 16kHz, mono, 16-bit PCM.
+/// - WAV must be 16kHz, 16-bit PCM.
+/// - Automatically converts stereo to mono if needed.
 /// - Model must be a `ggml-*.bin` file.
+///
+/// Parameters:
+/// - `auto_detect_language`: If true, uses "auto" for language detection. If false, uses "en".
 ///
 /// Returns: (language, segments) where segments = Vec<(start_time, end_time, text)>
 ///
@@ -14,16 +18,18 @@ use whisper_rs::{FullParams, SamplingStrategy, WhisperContext, WhisperContextPar
 pub fn transcribe_single_pass(
     model_path: &Path,
     wav_path: &Path,
+    auto_detect_language: bool,
 ) -> Result<(String, Vec<(f64, f64, String)>)> {
     // --- 1️⃣ Load audio ---
     let mut reader = hound::WavReader::open(wav_path).context("Failed to open WAV file")?;
     let spec = reader.spec();
-    if spec.channels != 1 {
-        anyhow::bail!("Expected mono (1 channel) WAV file, got {}", spec.channels);
-    }
+
+    // Validate sample rate (must be 16kHz for Whisper)
     if spec.sample_rate != 16_000 {
         anyhow::bail!("Expected 16kHz sample rate, got {}", spec.sample_rate);
     }
+
+    // Validate bit depth (must be 16-bit PCM)
     if spec.bits_per_sample != 16 {
         anyhow::bail!(
             "Expected 16-bit PCM audio, got {} bits",
@@ -31,11 +37,29 @@ pub fn transcribe_single_pass(
         );
     }
 
+    // Read samples as i16
     let samples_i16: Vec<i16> = reader.samples::<i16>().filter_map(Result::ok).collect();
-    let mut samples_f32 = vec![0.0f32; samples_i16.len()];
 
+    // Convert i16 PCM to f32 audio samples
+    let mut samples_f32 = vec![0.0f32; samples_i16.len()];
     whisper_rs::convert_integer_to_float_audio(&samples_i16, &mut samples_f32)
         .context("Failed to convert PCM samples")?;
+
+    // Convert stereo to mono if needed (whisper requires mono)
+    let samples_mono = if spec.channels == 2 {
+        // Stereo: convert to mono (output will be half the size)
+        let mut mono_samples = vec![0.0f32; samples_f32.len() / 2];
+        whisper_rs::convert_stereo_to_mono_audio(&samples_f32, &mut mono_samples)
+            .context("Failed to convert stereo to mono")?;
+        mono_samples
+    } else if spec.channels == 1 {
+        samples_f32 // Already mono, use as-is
+    } else {
+        anyhow::bail!(
+            "Unsupported channel count: {}. Only mono (1) and stereo (2) are supported.",
+            spec.channels
+        );
+    };
 
     // --- 2️⃣ Load Whisper model ---
     let ctx = WhisperContext::new_with_params(
@@ -50,22 +74,40 @@ pub fn transcribe_single_pass(
         .context("Failed to create Whisper state")?;
 
     // --- 4️⃣ Configure decoding ---
-    let mut params = FullParams::new(SamplingStrategy::BeamSearch {
+    // Use Greedy sampling for faster transcription (trades some accuracy for speed)
+    // BeamSearch is more accurate but significantly slower (beam_size: 5 causes 10-20s pauses)
+    let mut params = FullParams::new(SamplingStrategy::Greedy { best_of: 5 });
+
+    /*
+        let mut params = FullParams::new(SamplingStrategy::BeamSearch {
         beam_size: 5,
         patience: -1.0,
     });
 
-    params.set_language(Some("auto")); // auto-detect language
-    params.set_print_progress(false); // Silent mode for production
+     */
+
+    // Set language: "auto" for detection or "en" for English
+    let language_code = if auto_detect_language { "auto" } else { "en" };
+    params.set_language(Some(language_code));
+
+    // Performance: Use all available CPU cores for faster transcription
+    // Default is min(4, hardware_concurrency) - we override to use all cores
+    let num_threads = num_cpus::get() as i32;
+    params.set_n_threads(num_threads);
+
+    // Silent mode for production (no console output)
+    params.set_print_progress(false);
     params.set_print_special(false);
     params.set_print_realtime(false);
     params.set_print_timestamps(false);
+
+    // Decoding settings
     params.set_temperature(0.0);
     params.set_no_context(true);
 
     // --- 5️⃣ Run transcription ---
     state
-        .full(params, &samples_f32)
+        .full(params, &samples_mono)
         .context("Transcription failed")?;
 
     // --- 6️⃣ Collect results ---
@@ -86,8 +128,17 @@ pub fn transcribe_single_pass(
         }
     }
 
-    // Language detection (fallback to "en" if not available)
-    let language = "en".to_string(); // whisper_rs doesn't expose detected language easily
+    // --- 7️⃣ Get detected language ---
+    let detected_language = if auto_detect_language {
+        // Retrieve the detected language ID from the state
+        let lang_id = state.full_lang_id_from_state();
+        // Convert language ID to language code (e.g., "en", "fr", "es")
+        whisper_rs::get_lang_str(lang_id)
+            .unwrap_or("unknown")
+            .to_string()
+    } else {
+        language_code.to_string()
+    };
 
-    Ok((language, segments))
+    Ok((detected_language, segments))
 }
