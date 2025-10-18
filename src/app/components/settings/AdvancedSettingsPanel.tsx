@@ -1,7 +1,17 @@
 import { Select, SelectItem, Slider, Switch, Input, Tooltip } from "@heroui/react";
 import { IoInformationCircleOutline } from "react-icons/io5";
 import { useTranscriptionSettingsStore } from "@app/stores/useTranscriptionSettingsStore";
-import type { SamplingStrategy } from "@app/types/transcriptionSettings";
+import {
+  SECTIONS,
+  SLIDER_CONFIGS,
+  SELECT_CONFIGS,
+  SWITCH_CONFIGS,
+  INPUT_CONFIGS,
+  type SliderConfig,
+  type SelectConfig,
+  type SwitchConfig,
+  type InputConfig,
+} from "./advancedSettingsConfig";
 import "./AdvancedSettingsPanel.scss";
 
 type AdvancedSettingsPanelProps = {
@@ -21,6 +31,10 @@ export function AdvancedSettingsPanel({ isDisabled = false }: AdvancedSettingsPa
   const bestOf = isSamplingGreedy ? settings.sampling_strategy.best_of : 5;
   const beamSize = !isSamplingGreedy ? settings.sampling_strategy.beam_size : 5;
   const patience = !isSamplingGreedy ? settings.sampling_strategy.patience : -1.0;
+
+  // ============================================================================
+  // HANDLERS
+  // ============================================================================
 
   const handleSamplingTypeChange = (type: string) => {
     if (type === "greedy") {
@@ -58,249 +72,172 @@ export function AdvancedSettingsPanel({ isDisabled = false }: AdvancedSettingsPa
     setTemperature(numValue);
   };
 
-  return (
-    <div className="advanced-settings">
-      {/* Sampling Strategy */}
-      <div className="advanced-settings__section">
-        <div className="advanced-settings__title-row">
-          <h4 className="advanced-settings__section-title">Sampling Strategy</h4>
+  // ============================================================================
+  // VALUE GETTERS
+  // ============================================================================
+
+  const getSliderValue = (sliderId: string): number => {
+    switch (sliderId) {
+      case "bestOf":
+        return bestOf;
+      case "beamSize":
+        return beamSize;
+      case "patience":
+        return patience;
+      case "temperature":
+        return settings.temperature;
+      default:
+        return 0;
+    }
+  };
+
+  const getSliderHandler = (sliderId: string) => {
+    switch (sliderId) {
+      case "bestOf":
+        return handleBestOfChange;
+      case "beamSize":
+        return handleBeamSizeChange;
+      case "patience":
+        return handlePatienceChange;
+      case "temperature":
+        return handleTemperatureChange;
+      default:
+        return () => {};
+    }
+  };
+
+  // ============================================================================
+  // RENDER HELPERS
+  // ============================================================================
+
+  const renderSlider = (config: SliderConfig) => (
+    <div key={config.id}>
+      <Slider
+        label={config.label}
+        minValue={config.minValue}
+        maxValue={config.maxValue}
+        step={config.step}
+        value={getSliderValue(config.id)}
+        onChange={getSliderHandler(config.id)}
+        isDisabled={isDisabled}
+        className="advanced-settings__slider"
+        showSteps
+        marks={config.marks}
+      />
+      {config.hint && (
+        <p className="advanced-settings__param-hint">{config.hint}</p>
+      )}
+    </div>
+  );
+
+  const renderSelect = (config: SelectConfig) => (
+    <Select
+      key={config.id}
+      label={config.label}
+      selectedKeys={[settings.sampling_strategy.type]}
+      onChange={(e) => handleSamplingTypeChange(e.target.value)}
+      isDisabled={isDisabled}
+      className="advanced-settings__input"
+    >
+      {config.options.map((option) => (
+        <SelectItem key={option.key}>{option.label}</SelectItem>
+      ))}
+    </Select>
+  );
+
+  const renderSwitch = (config: SwitchConfig) => (
+    <div key={config.id}>
+      <Switch
+        isSelected={settings.no_context}
+        onValueChange={setNoContext}
+        isDisabled={isDisabled}
+        className="advanced-settings__switch"
+      >
+        {config.label}
+      </Switch>
+      {config.hint && (
+        <p className="advanced-settings__hint">{config.hint}</p>
+      )}
+    </div>
+  );
+
+  const renderInput = (config: InputConfig) => (
+    <Input
+      key={config.id}
+      label={config.label}
+      placeholder={config.placeholder}
+      value={settings.initial_prompt || ""}
+      onChange={(e) => setInitialPrompt(e.target.value || null)}
+      isDisabled={isDisabled}
+      className="advanced-settings__input"
+    />
+  );
+
+  const renderControl = (control: SliderConfig | SelectConfig | SwitchConfig | InputConfig) => {
+    if ("marks" in control) {
+      return renderSlider(control as SliderConfig);
+    }
+    if ("options" in control) {
+      return renderSelect(control as SelectConfig);
+    }
+    if ("hint" in control && !("placeholder" in control)) {
+      return renderSwitch(control as SwitchConfig);
+    }
+    if ("placeholder" in control) {
+      return renderInput(control as InputConfig);
+    }
+    return null;
+  };
+
+  const renderSection = (section: typeof SECTIONS[0]) => (
+    <div key={section.id} className="advanced-settings__section">
+      {/* Section Header */}
+      <div className="advanced-settings__title-row">
+        <h4 className="advanced-settings__section-title">{section.title}</h4>
+        {section.tooltip && (
           <Tooltip
-            content={
-              <div className="advanced-settings__tooltip-content">
-                <p>
-                  <strong>Greedy:</strong> Picks the most likely token at each step. Fast,
-                  but may miss alternative interpretations.
-                </p>
-                <p>
-                  <strong>Beam Search:</strong> Explores multiple token sequences
-                  simultaneously. Slower but more accurate.
-                </p>
-              </div>
-            }
-            placement="right"
+            content={section.tooltip.content}
+            placement={section.tooltip.placement || "right"}
             showArrow
           >
             <button type="button" className="advanced-settings__info-button">
               <IoInformationCircleOutline size={18} className="advanced-settings__info-icon" />
             </button>
           </Tooltip>
-        </div>
-        <p className="advanced-settings__hint">
-          How the model chooses tokens during transcription
-        </p>
-
-        <Select
-          label="Strategy Type"
-          selectedKeys={[settings.sampling_strategy.type]}
-          onChange={(e) => handleSamplingTypeChange(e.target.value)}
-          isDisabled={isDisabled}
-          className="advanced-settings__input"
-        >
-          <SelectItem key="greedy">Greedy (Fast)</SelectItem>
-          <SelectItem key="beam_search">Beam Search (Accurate)</SelectItem>
-        </Select>
-
-        {isSamplingGreedy ? (
-          <>
-            <Slider
-              label="Best Of"
-              minValue={1}
-              maxValue={8}
-              step={1}
-              value={bestOf}
-              onChange={handleBestOfChange}
-              isDisabled={isDisabled}
-              className="advanced-settings__slider"
-              showSteps
-              marks={[
-                { value: 1, label: "1" },
-                { value: 5, label: "5" },
-                { value: 8, label: "8" },
-              ]}
-            />
-            <p className="advanced-settings__param-hint">
-              Number of candidate sequences to consider. Higher = better quality but slower.
-            </p>
-          </>
-        ) : (
-          <>
-            <Slider
-              label="Beam Size"
-              minValue={2}
-              maxValue={8}
-              step={1}
-              value={beamSize}
-              onChange={handleBeamSizeChange}
-              isDisabled={isDisabled}
-              className="advanced-settings__slider"
-              showSteps
-              marks={[
-                { value: 2, label: "2" },
-                { value: 5, label: "5" },
-                { value: 8, label: "8" },
-              ]}
-            />
-            <p className="advanced-settings__param-hint">
-              Number of parallel beams. Higher = more thorough exploration, much slower.
-            </p>
-
-            <Slider
-              label="Patience"
-              minValue={-1}
-              maxValue={2}
-              step={0.5}
-              value={patience}
-              onChange={handlePatienceChange}
-              isDisabled={isDisabled}
-              className="advanced-settings__slider"
-              showSteps
-              marks={[
-                { value: -1, label: "-1.0" },
-                { value: 0, label: "0.0" },
-                { value: 1, label: "1.0" },
-                { value: 2, label: "2.0" },
-              ]}
-            />
-            <p className="advanced-settings__param-hint">
-              Controls beam search early termination. -1.0 = disabled, higher values = stops
-              earlier when quality plateaus.
-            </p>
-          </>
         )}
       </div>
 
-      {/* Temperature */}
-      <div className="advanced-settings__section">
-        <div className="advanced-settings__title-row">
-          <h4 className="advanced-settings__section-title">Temperature</h4>
-          <Tooltip
-            content={
-              <div className="advanced-settings__tooltip-content">
-                <p>
-                  Controls how "creative" token choices are. Lower values make the model
-                  more deterministic (same input → same output). Higher values introduce
-                  more variation.
-                </p>
-                <p>
-                  <strong>0.0:</strong> Fully deterministic
-                  <br />
-                  <strong>0.5:</strong> Balanced (recommended)
-                  <br />
-                  <strong>1.0:</strong> Maximum variation
-                </p>
-              </div>
-            }
-            placement="right"
-            showArrow
-          >
-            <button type="button" className="advanced-settings__info-button">
-              <IoInformationCircleOutline size={18} className="advanced-settings__info-icon" />
-            </button>
-          </Tooltip>
-        </div>
-        <p className="advanced-settings__hint">
-          Controls randomness of token selection
-        </p>
+      {/* Section Hint */}
+      {section.hint && (
+        <p className="advanced-settings__hint">{section.hint}</p>
+      )}
 
-        <Slider
-          label="Temperature"
-          minValue={0}
-          maxValue={1}
-          step={0.1}
-          value={settings.temperature}
-          onChange={handleTemperatureChange}
-          isDisabled={isDisabled}
-          className="advanced-settings__slider"
-          showSteps
-          marks={[
-            { value: 0, label: "0.0" },
-            { value: 0.5, label: "0.5" },
-            { value: 1, label: "1.0" },
-          ]}
-        />
-      </div>
+      {/* Section Controls */}
+      {section.controls.map(renderControl)}
 
-      {/* Context Options */}
-      <div className="advanced-settings__section">
-        <div className="advanced-settings__title-row">
-          <h4 className="advanced-settings__section-title">Context Settings</h4>
-          <Tooltip
-            content={
-              <div className="advanced-settings__tooltip-content">
-                <p>
-                  <strong>Enabled (No Context):</strong> Each segment is transcribed
-                  independently. Faster, but segments may lack continuity.
-                </p>
-                <p>
-                  <strong>Disabled (Use Context):</strong> Uses previous text to inform
-                  current segment. Better for continuous speech, slightly slower.
-                </p>
-              </div>
-            }
-            placement="right"
-            showArrow
-          >
-            <button type="button" className="advanced-settings__info-button">
-              <IoInformationCircleOutline size={18} className="advanced-settings__info-icon" />
-            </button>
-          </Tooltip>
-        </div>
+      {/* Conditional Sliders for Sampling Strategy */}
+      {section.id === "sampling_strategy" && (
+        <>
+          {isSamplingGreedy ? (
+            renderSlider(SLIDER_CONFIGS.bestOf)
+          ) : (
+            <>
+              {renderSlider(SLIDER_CONFIGS.beamSize)}
+              {renderSlider(SLIDER_CONFIGS.patience)}
+            </>
+          )}
+        </>
+      )}
+    </div>
+  );
 
-        <Switch
-          isSelected={settings.no_context}
-          onValueChange={setNoContext}
-          isDisabled={isDisabled}
-          className="advanced-settings__switch"
-        >
-          No Context
-        </Switch>
-        <p className="advanced-settings__hint">
-          Transcribe each segment independently (faster, less continuity)
-        </p>
-      </div>
+  // ============================================================================
+  // MAIN RENDER
+  // ============================================================================
 
-      {/* Initial Prompt */}
-      <div className="advanced-settings__section">
-        <div className="advanced-settings__title-row">
-          <h4 className="advanced-settings__section-title">Initial Prompt</h4>
-          <Tooltip
-            content={
-              <div className="advanced-settings__tooltip-content">
-                <p>
-                  Provide starting text to guide transcription. Useful for:
-                </p>
-                <ul>
-                  <li>Domain-specific terminology</li>
-                  <li>Speaker names or context</li>
-                  <li>Expected vocabulary</li>
-                </ul>
-                <p>
-                  <strong>Example:</strong> "This is a technical interview about React
-                  and TypeScript with Sarah Chen."
-                </p>
-              </div>
-            }
-            placement="right"
-            showArrow
-          >
-            <button type="button" className="advanced-settings__info-button">
-              <IoInformationCircleOutline size={18} className="advanced-settings__info-icon" />
-            </button>
-          </Tooltip>
-        </div>
-        <p className="advanced-settings__hint">
-          Optional context to guide the model
-        </p>
-
-        <Input
-          label="Initial Prompt (Optional)"
-          placeholder="e.g., This is a technical interview about React..."
-          value={settings.initial_prompt || ""}
-          onChange={(e) => setInitialPrompt(e.target.value || null)}
-          isDisabled={isDisabled}
-          className="advanced-settings__input"
-        />
-      </div>
+  return (
+    <div className="advanced-settings">
+      {SECTIONS.map(renderSection)}
     </div>
   );
 }
