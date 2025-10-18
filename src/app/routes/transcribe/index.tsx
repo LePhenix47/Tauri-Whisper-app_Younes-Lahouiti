@@ -3,11 +3,13 @@ import { Select, SelectItem } from "@heroui/react";
 import { FileDropzone } from "@components/common/drag-and-drop/FileDropzone";
 import { FilePreview } from "@components/common/drag-and-drop/FilePreview";
 import { TranscriptionResult } from "@components/common/transcription/TranscriptionResult";
+import { TranscriptionPresetSelector } from "@app/components/settings/TranscriptionPresetSelector";
 import {
   transcribeFileAdvanced,
   type TranscriptionProgress,
 } from "@api/endpoints/transcription";
 import { useTranscriptionStore } from "@app/stores/useTranscriptionStore";
+import { useTranscriptionSettingsStore } from "@app/stores/useTranscriptionSettingsStore";
 import { useListModels } from "@app/hooks/useModels";
 import type { ModelName } from "@api/models";
 import "./index.scss";
@@ -57,6 +59,11 @@ function TranscribePage() {
     (state) => state.clearResultsOnly
   );
 
+  // Get transcription settings
+  const transcriptionSettings = useTranscriptionSettingsStore(
+    (state) => state.settings
+  );
+
   // Get downloaded models
   const { data: downloadedModelsRaw = [] } = useListModels();
 
@@ -84,6 +91,7 @@ function TranscribePage() {
         selectedFilePath,
         selectedModel,
         true,
+        transcriptionSettings,
         (progressUpdate: TranscriptionProgress) => {
           setProgress(progressUpdate);
         }
@@ -175,33 +183,40 @@ function TranscribePage() {
     <section className="transcribe-page">
       <h1 className="transcribe-page__title">Transcribe Audio</h1>
 
-      {/* Model Selector */}
-      {!result && (
-        <div className="transcribe-page__model-selector">
-          <Select
-            label="Whisper Model"
-            placeholder="Select a model"
-            selectedKeys={[selectedModel]}
-            onChange={(e) => setSelectedModel(e.target.value as ModelName)}
-            isDisabled={isTranscribing}
-            description={getModelDescription()}
-            errorMessage={getModelErrorMessage()}
-          >
-            {downloadedModels.map((model) => (
-              <SelectItem key={model.name} textValue={model.label}>
-                <div className="transcribe-page__model-item">
-                  <span>{model.label}</span>
-                  <span className="transcribe-page__model-size">
-                    {model.size}
-                  </span>
-                </div>
-              </SelectItem>
-            ))}
-          </Select>
-        </div>
-      )}
-
+      {/* Show dropzone/file preview/results */}
       {renderContent()}
+
+      {/* Model & Quality Settings - only show when file selected but not transcribing */}
+      {selectedFilePath && !result && (
+        <>
+          <div className="transcribe-page__model-selector">
+            <Select
+              label="Whisper Model"
+              placeholder="Select a model"
+              selectedKeys={[selectedModel]}
+              onChange={(e) => setSelectedModel(e.target.value as ModelName)}
+              isDisabled={isTranscribing}
+              description={getModelDescription()}
+              errorMessage={getModelErrorMessage()}
+            >
+              {downloadedModels.map((model) => (
+                <SelectItem key={model.name} textValue={model.label}>
+                  <div className="transcribe-page__model-item">
+                    <span>{model.label}</span>
+                    <span className="transcribe-page__model-size">
+                      {model.size}
+                    </span>
+                  </div>
+                </SelectItem>
+              ))}
+            </Select>
+          </div>
+
+          <div className="transcribe-page__preset-selector">
+            <TranscriptionPresetSelector isDisabled={isTranscribing} />
+          </div>
+        </>
+      )}
     </section>
   );
 }

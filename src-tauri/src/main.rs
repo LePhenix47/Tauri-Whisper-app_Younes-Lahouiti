@@ -11,7 +11,7 @@ use whisper_rs::{WhisperContext, WhisperContextParameters};
 
 mod whisper_rs_imp; // tells Rust to load src/whisper_rs_imp/mod.rs
 
-use whisper_rs_imp::transcriber::transcribe_single_pass;
+use whisper_rs_imp::transcriber::{transcribe_single_pass, TranscriptionSettings};
 
 // ============================================================================
 // TYPES & STRUCTURES
@@ -168,10 +168,16 @@ async fn transcribe_file_advanced(
     file_path: String,
     model_name: Option<String>,
     detect_language: Option<bool>,
+    settings: Option<TranscriptionSettings>,
 ) -> Result<TranscriptionResult, String> {
-    let result =
-        transcribe_file_advanced_impl(app, file_path, model_name, detect_language.unwrap_or(true))
-            .await;
+    let result = transcribe_file_advanced_impl(
+        app,
+        file_path,
+        model_name,
+        detect_language.unwrap_or(true),
+        settings,
+    )
+    .await;
 
     match result {
         Ok(res) => Ok(res),
@@ -184,6 +190,7 @@ async fn transcribe_file_advanced_impl(
     file_path: String,
     model_name: Option<String>,
     auto_detect_language: bool,
+    settings: Option<TranscriptionSettings>,
 ) -> Result<TranscriptionResult> {
     let model = model_name.unwrap_or_else(|| "base".to_string());
     let audio_path = PathBuf::from(&file_path);
@@ -226,7 +233,7 @@ async fn transcribe_file_advanced_impl(
     let (language, segments) = tokio::task::spawn_blocking({
         let model_path = model_path.clone();
         let temp_wav = temp_wav.clone();
-        move || transcribe_single_pass(&model_path, &temp_wav, auto_detect_language)
+        move || transcribe_single_pass(&model_path, &temp_wav, auto_detect_language, settings)
     })
     .await
     .context("Failed to spawn blocking Whisper task")??;
@@ -403,7 +410,7 @@ async fn transcribe_file(
     file_path: String,
     model_name: Option<String>,
 ) -> Result<String, String> {
-    match transcribe_file_advanced(app, file_path, model_name, Some(true)).await {
+    match transcribe_file_advanced(app, file_path, model_name, Some(true), None).await {
         Ok(result) => Ok(result.text),
         Err(e) => Err(e),
     }

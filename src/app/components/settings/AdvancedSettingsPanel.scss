@@ -1,0 +1,107 @@
+@use "../../../sass/utils/" as *;
+
+.advanced-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+
+  &__section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  &__title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  &__section-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  &__info-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: help;
+    color: var(--color-primary);
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+
+    &:hover {
+      opacity: 1;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+  }
+
+  &__info-icon {
+    display: block;
+  }
+
+  &__hint {
+    font-size: 0.875rem;
+    opacity: 0.7;
+    margin: 0;
+    line-height: 1.4;
+  }
+
+  &__param-hint {
+    font-size: 0.8125rem;
+    opacity: 0.6;
+    margin: 0;
+    margin-block-start: 0.25rem;
+    font-style: italic;
+  }
+
+  &__tooltip-content {
+    max-width: 300px;
+    padding: 0.5rem;
+
+    p {
+      margin: 0;
+      margin-block-end: 0.75rem;
+      line-height: 1.5;
+
+      &:last-child {
+        margin-block-end: 0;
+      }
+    }
+
+    ul {
+      margin: 0.5rem 0;
+      padding-inline-start: 1.25rem;
+
+      li {
+        margin-block-end: 0.25rem;
+      }
+    }
+
+    strong {
+      font-weight: 600;
+    }
+  }
+
+  &__input {
+    margin-block-start: 0.5rem;
+  }
+
+  &__slider {
+    margin-block-start: 0.5rem;
+  }
+
+  &__switch {
+    margin-block-start: 0.5rem;
+  }
+}

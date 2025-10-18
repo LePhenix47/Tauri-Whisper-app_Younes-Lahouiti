@@ -1,6 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { z } from "zod";
+import type { TranscriptionSettings } from "@app/types/transcriptionSettings";
 
 // Request schema
 export const TranscribeRequestSchema = z.object({
@@ -88,6 +89,7 @@ export async function transcribeFile(
  * @param filePath - Absolute path to the audio/video file
  * @param modelName - Whisper model name (defaults to "base" in Rust)
  * @param detectLanguage - Auto-detect language (defaults to true)
+ * @param settings - Transcription settings (sampling strategy, temperature, etc.)
  * @param onProgress - Callback for progress updates
  * @returns Full transcription result with subtitles and metadata
  */
@@ -95,6 +97,7 @@ export async function transcribeFileAdvanced(
   filePath: string,
   modelName?: string,
   detectLanguage: boolean = true,
+  settings?: TranscriptionSettings,
   onProgress?: ProgressCallback
 ): Promise<TranscribeAdvancedResponse> {
   // Validate request
@@ -123,6 +126,7 @@ export async function transcribeFileAdvanced(
         filePath: request.filePath,
         modelName: request.modelName,
         detectLanguage,
+        settings: settings || null,
       }
     );
 

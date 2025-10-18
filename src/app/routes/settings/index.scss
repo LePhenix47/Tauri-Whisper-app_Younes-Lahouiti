@@ -1,0 +1,14 @@
+@use "../../../sass/utils/" as *;
+
+.settings-page {
+  max-width: 800px;
+  margin: 0 auto;
+
+  &__title {
+    margin-block-end: 2rem;
+  }
+
+  &__section {
+    margin-block-end: 2rem;
+  }
+}
