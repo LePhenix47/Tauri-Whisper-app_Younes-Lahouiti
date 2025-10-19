@@ -33,7 +33,9 @@
       "Bash(netstat:*)",
       "Bash(findstr:*)",
       "Bash(taskkill:*)",
-      "Bash(move:*)"
+      "Bash(move:*)",
+      "Bash(copy liblibvosk.dll targetdebuglibvosk.dll)",
+      "Bash(cp:*)"
     ],
     "deny": [],
     "ask": []
