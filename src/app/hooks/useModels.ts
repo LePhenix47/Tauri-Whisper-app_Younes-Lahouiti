@@ -4,6 +4,8 @@ import {
   getModelsDir,
   listDownloadedModels,
   testWhisper,
+  downloadVoskModel,
+  listVoskModels,
   type ModelName,
 } from "@api/models";
 
@@ -40,5 +42,33 @@ export function useListModels() {
 export function useTestWhisper() {
   return useMutation({
     mutationFn: (modelName: ModelName) => testWhisper(modelName),
+  });
+}
+
+/**
+ * Hook for downloading Vosk models
+ * Invalidates voskModels query on success
+ */
+export function useDownloadVoskModel() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (modelName: string) => downloadVoskModel(modelName),
+    onSuccess: async (message) => {
+      if (message.includes("Successfully downloaded")) {
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        await queryClient.invalidateQueries({ queryKey: ["voskModels"] });
+      }
+    },
+  });
+}
+
+/**
+ * Hook for listing downloaded Vosk models
+ */
+export function useListVoskModels() {
+  return useQuery({
+    queryKey: ["voskModels"],
+    queryFn: listVoskModels,
   });
 }

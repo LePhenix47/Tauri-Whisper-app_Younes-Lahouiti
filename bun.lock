@@ -6,6 +6,7 @@
       "dependencies": {
         "@gsap/react": "^2.1.2",
         "@heroui/react": "^2.8.5",
+        "@speechmatics/browser-audio-input-react": "^2.0.3",
         "@tanstack/react-query": "^5.90.2",
         "@tanstack/react-router": "^1.132.47",
         "@tauri-apps/api": "^2.0.0",
@@ -642,6 +643,10 @@
     "@rollup/rollup-win32-x64-gnu": ["@rollup/rollup-win32-x64-gnu@4.52.4", "", { "os": "win32", "cpu": "x64" }, "sha512-UF9KfsH9yEam0UjTwAgdK0anlQ7c8/pWPU2yVjyWcF1I1thABt6WXE47cI71pGiZ8wGvxohBoLnxM04L/wj8mQ=="],
 
     "@rollup/rollup-win32-x64-msvc": ["@rollup/rollup-win32-x64-msvc@4.52.4", "", { "os": "win32", "cpu": "x64" }, "sha512-bf9PtUa0u8IXDVxzRToFQKsNCRz9qLYfR/MpECxl4mRoWYjAeFjgxj1XdZr2M/GNVpT05p+LgQOHopYDlUu6/w=="],
+
+    "@speechmatics/browser-audio-input": ["@speechmatics/browser-audio-input@2.0.3", "", { "dependencies": { "typescript-event-target": "^1.1.1" } }, "sha512-NSfp2D0lg+fimm4FL7hFAEq/W4NEKu+gEoF9L50EwJfldH1xvUR3DVLuA4xi/7U/0j67nRG4tpBv473Rp0gAPQ=="],
+
+    "@speechmatics/browser-audio-input-react": ["@speechmatics/browser-audio-input-react@2.0.3", "", { "dependencies": { "@speechmatics/browser-audio-input": "2.0.3" }, "peerDependencies": { "react": "^18 || ^19" } }, "sha512-+OwyBNrxP4JfT8S6KvnmKZQ+wy4Za6qtK3NdUmq+7lm3CpdGDRYOCF+yzPaNng8GEGWCgP4jj3dVy36PhPgqgA=="],
 
     "@storybook/addon-a11y": ["@storybook/addon-a11y@9.1.10", "", { "dependencies": { "@storybook/global": "^5.0.0", "axe-core": "^4.2.0" }, "peerDependencies": { "storybook": "^9.1.10" } }, "sha512-RhYYtk8nePxVNfP/voW8vS7AiQxWWBgOLNMTeDr9Anjh06mpSWZ/U/zEUNC9TrId5BxnyZJW5Lkg0JUMwvyfjw=="],
 
@@ -1286,6 +1291,8 @@
     "tsx": ["tsx@4.20.6", "", { "dependencies": { "esbuild": "~0.25.0", "get-tsconfig": "^4.7.5" }, "optionalDependencies": { "fsevents": "~2.3.3" }, "bin": { "tsx": "dist/cli.mjs" } }, "sha512-ytQKuwgmrrkDTFP4LjR0ToE2nqgy886GpvRSpU0JAnrdBYppuY5rLkRUYPU1yCryb24SsKBTL/hlDQAEFVwtZg=="],
 
     "typescript": ["typescript@5.9.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw=="],
+
+    "typescript-event-target": ["typescript-event-target@1.1.1", "", {}, "sha512-dFSOFBKV6uwaloBCCUhxlD3Pr/P1a/tJdcmPrTXCHlEFD3faj0mztjcGn6VBAhQ0/Bdy8K3VWrrqwbt/ffsYsg=="],
 
     "unicorn-magic": ["unicorn-magic@0.1.0", "", {}, "sha512-lRfVq8fE8gz6QMBuDM6a+LO3IAzTi05H6gCVaUpir2E1Rwpo4ZUog45KpNXKC/Mn3Yb9UDuHumeFTo9iV/D9FQ=="],
 

@@ -19,6 +19,7 @@
   "dependencies": {
     "@gsap/react": "^2.1.2",
     "@heroui/react": "^2.8.5",
+    "@speechmatics/browser-audio-input-react": "^2.0.3",
     "@tanstack/react-query": "^5.90.2",
     "@tanstack/react-router": "^1.132.47",
     "@tauri-apps/api": "^2.0.0",
