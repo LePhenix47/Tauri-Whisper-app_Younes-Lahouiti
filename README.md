@@ -17,6 +17,7 @@ This app processes audio/video files locally using Whisper AI to generate accura
   - [✅ Pre-requisites](#-pre-requisites)
     - [Required](#required)
     - [For Building Whisper-RS](#for-building-whisper-rs)
+    - [For Building Vosk (Live Transcription)](#for-building-vosk-live-transcription)
   - [⚙️ Configuration](#️-configuration)
   - [📦 Installation](#-installation)
   - [🛠️ Running the Project](#️-running-the-project)
@@ -441,6 +442,7 @@ MIT License - See [LICENSE](LICENSE) file for details.
 
 - [Tauri Documentation](https://tauri.app/v1/guides/)
 - [Whisper.cpp Models](https://huggingface.co/ggerganov/whisper.cpp/tree/main)
+- [Vosk Models](https://alphacephei.com/vosk/models) - Speech recognition models for 40+ languages
 - [TanStack Router Docs](https://tanstack.com/router)
 - [TanStack Query Docs](https://tanstack.com/query)
 - [HeroUI Documentation](https://heroui.com/)
