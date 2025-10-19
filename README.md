@@ -142,13 +142,18 @@ The app uses [`whisper-rs`](https://codeberg.org/tazz4843/whisper-rs), a Rust wr
 
 The app uses [`vosk-rs`](https://github.com/Bear-03/vosk-rs) for real-time speech recognition. Building requires:
 
+- **Visual C++ Redistributable** (required for libvosk.dll runtime dependencies)
+  - Download and install [Microsoft Visual C++ Redistributable](https://aka.ms/vs/17/release/vc_redist.x64.exe) (2015-2022)
+  - Or if you have Visual Studio installed, this is already present
+  - Verify: Check if `msvcp140.dll` exists in `C:\Windows\System32`
+
 - **Vosk Native Library** (libvosk.dll on Windows)
   1. Download `vosk-win64-0.3.45.zip` from [Vosk API Releases](https://github.com/alphacep/vosk-api/releases/tag/v0.3.45)
   2. Extract `libvosk.dll` from the archive
   3. Place it in `src-tauri/lib/libvosk.dll`
   4. For distribution, the DLL will be bundled automatically with the installer
 
-> 📝 **Note**: End users don't need to install the DLL separately - it's bundled with the app installer.
+> 📝 **Note**: End users don't need to install the DLL or VC++ Redistributable separately - both are bundled with the app installer.
 
 ---
 
