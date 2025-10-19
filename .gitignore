@@ -36,9 +36,7 @@ dist-ssr
 
 # Tauri
 src-tauri/target
-src-tauri/Cargo.lock
-# Native libraries (Vosk DLLs) - not checked into git
-src-tauri/lib/* 
+src-tauri/Cargo.lock 
 
 # Environment
 .env
