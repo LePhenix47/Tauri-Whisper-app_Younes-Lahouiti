@@ -32,6 +32,25 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-
 
+      - name: Install Visual C++ Redistributable
+        run: choco install vcredist140 -y
+
+      - name: Verify MSVC runtime DLLs installed
+        run: dir "C:\Windows\System32\msvcp*.dll"
+
+      - name: Add libvosk.dll to PATH
+        run: echo "$env:GITHUB_WORKSPACE\src-tauri\lib" | Out-File -Append -Encoding utf8 $env:GITHUB_PATH
+
+      - name: Verify libvosk.dll exists
+        run: |
+          if (Test-Path "src-tauri\lib\libvosk.dll") {
+            Write-Host "✓ libvosk.dll found"
+            Get-Item "src-tauri\lib\libvosk.dll" | Select-Object Name, Length
+          } else {
+            Write-Error "✗ libvosk.dll NOT found"
+            exit 1
+          }
+
       - name: Run Rust tests
         run: |
           cd src-tauri
