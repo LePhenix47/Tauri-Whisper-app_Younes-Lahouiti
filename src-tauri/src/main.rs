@@ -6,12 +6,29 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
+use std::sync::{Arc, Mutex};
 use tauri::{AppHandle, Emitter, Manager};
 use whisper_rs::{WhisperContext, WhisperContextParameters};
+use once_cell::sync::Lazy;
 
 mod whisper_rs_imp; // tells Rust to load src/whisper_rs_imp/mod.rs
+mod vosk_live_transcriber; // Vosk real-time transcription
 
 use whisper_rs_imp::transcriber::{transcribe_single_pass, TranscriptionSettings};
+use whisper_rs_imp::live_transcriber::{
+    transcribe_live_chunk, LiveTranscriptionContext, LiveTranscriptionResult,
+};
+use vosk_live_transcriber::{
+    VoskSessionManager, VoskTranscriptionResult,
+};
+
+// Global context manager for live transcription (Whisper)
+static LIVE_CONTEXT: Lazy<Arc<Mutex<LiveTranscriptionContext>>> =
+    Lazy::new(|| Arc::new(Mutex::new(LiveTranscriptionContext::new())));
+
+// Global session manager for Vosk
+static VOSK_SESSION_MANAGER: Lazy<Arc<Mutex<VoskSessionManager>>> =
+    Lazy::new(|| Arc::new(Mutex::new(VoskSessionManager::new())));
 
 // ============================================================================
 // TYPES & STRUCTURES
@@ -54,6 +71,111 @@ struct TranscriptionResult {
     subtitles_vtt: String,
     language: String,
     segments: Vec<SubtitleSegment>,
+}
+
+// ============================================================================
+// LIVE TRANSCRIPTION COMMANDS - VOSK (SESSION-BASED)
+// ============================================================================
+
+/// Start a new Vosk live transcription session
+/// Returns session ID to use in subsequent chunk calls
+#[tauri::command]
+async fn start_vosk_session(
+    app: AppHandle,
+    model_name: String,
+    sample_rate: f32,
+) -> Result<String, String> {
+    let models_dir = get_models_dir_internal(&app).map_err(|e| format!("{:#}", e))?;
+    let model_path = models_dir.join(&model_name);
+
+    if !model_path.exists() {
+        return Err(format!("Vosk model '{}' not found. Please download it first.", model_name));
+    }
+
+    // Create session in blocking task
+    let session_id = tokio::task::spawn_blocking(move || {
+        let mut manager = VOSK_SESSION_MANAGER.lock()
+            .map_err(|e| anyhow::anyhow!("Failed to lock session manager: {}", e))?;
+
+        manager.start_session(&model_path, sample_rate)
+    })
+    .await
+    .map_err(|e| format!("Failed to spawn task: {}", e))?
+    .map_err(|e| format!("Failed to start Vosk session: {:#}", e))?;
+
+    Ok(session_id)
+}
+
+/// Process audio chunk in existing Vosk session
+/// Returns transcription result (partial or final)
+#[tauri::command]
+async fn process_vosk_chunk(
+    session_id: String,
+    pcm_audio: Vec<i16>,
+) -> Result<VoskTranscriptionResult, String> {
+    // Process chunk in blocking task
+    let result = tokio::task::spawn_blocking(move || {
+        let mut manager = VOSK_SESSION_MANAGER.lock()
+            .map_err(|e| anyhow::anyhow!("Failed to lock session manager: {}", e))?;
+
+        manager.process_chunk(&session_id, &pcm_audio)
+    })
+    .await
+    .map_err(|e| format!("Failed to spawn task: {}", e))?
+    .map_err(|e| format!("Vosk chunk processing failed: {:#}", e))?;
+
+    Ok(result)
+}
+
+/// End Vosk session and get final transcription
+#[tauri::command]
+async fn end_vosk_session(
+    session_id: String,
+) -> Result<String, String> {
+    // End session in blocking task
+    let final_text = tokio::task::spawn_blocking(move || {
+        let mut manager = VOSK_SESSION_MANAGER.lock()
+            .map_err(|e| anyhow::anyhow!("Failed to lock session manager: {}", e))?;
+
+        manager.end_session(&session_id)
+    })
+    .await
+    .map_err(|e| format!("Failed to spawn task: {}", e))?
+    .map_err(|e| format!("Failed to end Vosk session: {:#}", e))?;
+
+    Ok(final_text)
+}
+
+// ============================================================================
+// LIVE TRANSCRIPTION COMMANDS - WHISPER (LEGACY)
+// ============================================================================
+
+/// Whisper live transcription (SLOW, high-quality)
+#[tauri::command]
+async fn transcribe_audio_chunk(
+    app: AppHandle,
+    audio_data: Vec<u8>,
+    model_name: Option<String>,
+) -> Result<LiveTranscriptionResult, String> {
+    let model = model_name.unwrap_or_else(|| "tiny".to_string());
+
+    // Get model path
+    let models_dir = get_models_dir_internal(&app).map_err(|e| format!("{:#}", e))?;
+    let model_path = models_dir.join(format!("ggml-{}.bin", model));
+
+    if !model_path.exists() {
+        return Err(format!("Model '{}' not found. Please download it first.", model));
+    }
+
+    // Run transcription in blocking task
+    let result = tokio::task::spawn_blocking(move || {
+        transcribe_live_chunk(&audio_data, &LIVE_CONTEXT, &model_path)
+    })
+    .await
+    .map_err(|e| format!("Failed to spawn task: {}", e))?
+    .map_err(|e| format!("Transcription failed: {:#}", e))?;
+
+    Ok(result)
 }
 
 // ============================================================================
@@ -294,6 +416,81 @@ async fn transcribe_file_advanced_impl(
 }
 
 // ============================================================================
+// VOSK MODEL MANAGEMENT
+// ============================================================================
+
+#[tauri::command]
+async fn download_vosk_model(app: AppHandle, model_name: String) -> Result<String, String> {
+    let models_dir = get_models_dir_internal(&app).map_err(|e| format!("{:#}", e))?;
+    let model_dir = models_dir.join(&model_name);
+
+    if model_dir.exists() {
+        return Ok(format!("Vosk model '{}' already exists", model_name));
+    }
+
+    // Download ZIP from alphacephei.com/vosk/models
+    let url = format!("https://alphacephei.com/vosk/models/{}.zip", model_name);
+
+    println!("📥 Downloading Vosk model from: {}", url);
+
+    let response = reqwest::get(&url)
+        .await
+        .map_err(|e| format!("Failed to download Vosk model: {}", e))?;
+
+    let bytes = response
+        .bytes()
+        .await
+        .map_err(|e| format!("Failed to read response: {}", e))?;
+
+    // Save ZIP to temp file
+    let temp_zip = models_dir.join(format!("{}.zip", model_name));
+    fs::write(&temp_zip, bytes).map_err(|e| format!("Failed to save ZIP: {}", e))?;
+
+    // Extract ZIP
+    println!("📦 Extracting Vosk model...");
+    let file = fs::File::open(&temp_zip).map_err(|e| format!("Failed to open ZIP: {}", e))?;
+    let mut archive = zip::ZipArchive::new(file).map_err(|e| format!("Failed to read ZIP: {}", e))?;
+
+    archive
+        .extract(&models_dir)
+        .map_err(|e| format!("Failed to extract ZIP: {}", e))?;
+
+    // Clean up ZIP file
+    let _ = fs::remove_file(&temp_zip);
+
+    println!("✅ Vosk model '{}' downloaded successfully", model_name);
+    Ok(format!("Successfully downloaded Vosk model '{}'", model_name))
+}
+
+#[tauri::command]
+fn list_vosk_models(app: AppHandle) -> Result<Vec<String>, String> {
+    let models_dir = get_models_dir_internal(&app).map_err(|e| format!("{:#}", e))?;
+
+    let entries =
+        fs::read_dir(&models_dir).map_err(|e| format!("Failed to read models directory: {}", e))?;
+
+    let mut models = Vec::new();
+    for entry in entries {
+        if let Ok(entry) = entry {
+            let path = entry.path();
+            if path.is_dir() {
+                if let Some(filename) = path.file_name() {
+                    if let Some(name) = filename.to_str() {
+                        // Only include directories starting with "vosk-model-"
+                        if name.starts_with("vosk-model-") {
+                            models.push(name.to_string());
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    models.sort();
+    Ok(models)
+}
+
+// ============================================================================
 // EXISTING COMMANDS (kept for compatibility)
 // ============================================================================
 
@@ -429,8 +626,14 @@ fn main() {
             get_models_dir,
             download_model,
             list_downloaded_models,
+            download_vosk_model,
+            list_vosk_models,
             transcribe_file,
             transcribe_file_advanced,
+            transcribe_audio_chunk,
+            start_vosk_session,
+            process_vosk_chunk,
+            end_vosk_session,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
