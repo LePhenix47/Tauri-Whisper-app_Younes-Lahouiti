@@ -29,7 +29,7 @@ export function Sidebar() {
     { to: "/", label: "Home", icon: IoHome },
     { to: "/models", label: "Models", icon: MdPlaylistAdd },
     { to: "/transcribe", label: "Transcribe", icon: MdMic },
-    // { to: "/live-recorder", label: "Live Recorder", icon: MdRadio },
+    { to: "/live-recorder", label: "Live Recorder", icon: MdRadio },
     { to: "/settings", label: "Settings", icon: IoSettings },
   ];
 
