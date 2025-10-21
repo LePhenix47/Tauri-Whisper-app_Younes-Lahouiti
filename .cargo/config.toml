@@ -1,0 +1,2 @@
+[env]
+CMAKE_FLAGS = "-Wno-dev"
