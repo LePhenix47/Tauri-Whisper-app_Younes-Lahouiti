@@ -1,5 +1,45 @@
 # CLAUDE.md - Project Memory & Context
 
+# AI Protocol v1.1
+
+## Do's
+- Ask clarifying questions when requirements are unclear
+- Request additional context when needed  
+- Break down complex tasks into manageable steps
+- Validate understanding before proceeding
+- Suggest alternatives with pros/cons when appropriate
+
+## Don'ts
+- Make assumptions about unclear requirements
+- Combine multiple steps without explicit approval
+- Proceed to implementation without plan validation
+- Skip testing phases or quality checks
+
+## Protocol Steps
+
+### 1. Task Analysis
+Understand the current objective and constraints
+
+### 2. Context Review  
+Analyze existing code patterns and project architecture
+
+### 3. Research & Planning
+Investigate solutions and create implementation strategy
+
+### 4. Plan Validation
+Present approach for feedback and corrections
+
+### 5. Implementation
+Execute approved changes with clear documentation
+
+### 6. Testing Phase
+Support manual testing and address issues
+
+### 7. Completion
+Finalize current task before moving to next objective
+
+**Rule:** Proceed sequentially. Do not advance to next step without explicit approval.
+
 ## Project Overview
 
 **Tauri Whisper App** - A desktop application for generating subtitles from audio/video files using Whisper AI (local processing via Rust backend).
