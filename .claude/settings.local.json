@@ -36,7 +36,10 @@
       "Bash(move:*)",
       "Bash(copy liblibvosk.dll targetdebuglibvosk.dll)",
       "Bash(cp:*)",
-      "Bash(powershell:*)"
+      "Bash(powershell:*)",
+      "Bash(set:*)",
+      "Bash(./build_with_vulkan.bat)",
+      "Bash(cmake --build:*)"
     ],
     "deny": [],
     "ask": []
