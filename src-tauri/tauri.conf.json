@@ -9,7 +9,8 @@
     "active": true,
     "targets": "all",
     "resources": [
-      "lib/libvosk.dll"
+      "lib/libvosk.dll",
+      "vulkan-1.dll"
     ]
   },
   "productName": "Tauri Whisper App",
