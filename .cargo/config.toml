@@ -1,2 +1,5 @@
 [env]
 CMAKE_FLAGS = "-Wno-dev"
+MSBUILDDISABLENODEREUSE = "1"
+UseMultiToolTask = "true"
+TrackFileAccess = "false"
