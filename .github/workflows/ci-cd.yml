@@ -51,6 +51,35 @@ jobs:
             exit 1
           }
 
+      - name: Install Vulkan SDK
+        run: |
+          # Download Vulkan SDK installer
+          $vulkanVersion = "1.3.290.0"
+          $installerUrl = "https://sdk.lunarg.com/sdk/download/$vulkanVersion/windows/VulkanSDK-$vulkanVersion-Installer.exe"
+          $installerPath = "$env:TEMP\VulkanSDK-Installer.exe"
+
+          Write-Host "Downloading Vulkan SDK $vulkanVersion..."
+          Invoke-WebRequest -Uri $installerUrl -OutFile $installerPath
+
+          Write-Host "Installing Vulkan SDK..."
+          Start-Process -FilePath $installerPath -ArgumentList "/S" -Wait
+
+          # Set VULKAN_SDK environment variable
+          $vulkanPath = "C:\VulkanSDK\$vulkanVersion"
+          echo "VULKAN_SDK=$vulkanPath" | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
+
+          Write-Host "✓ Vulkan SDK installed at $vulkanPath"
+
+      - name: Verify Vulkan SDK installation
+        run: |
+          if (Test-Path $env:VULKAN_SDK) {
+            Write-Host "✓ VULKAN_SDK environment variable set to: $env:VULKAN_SDK"
+            Get-ChildItem $env:VULKAN_SDK | Select-Object Name
+          } else {
+            Write-Error "✗ VULKAN_SDK not set or path doesn't exist"
+            exit 1
+          }
+
       - name: Run Rust tests
         run: |
           cd src-tauri
