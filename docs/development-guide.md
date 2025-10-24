@@ -69,6 +69,70 @@ bunx tauri ios build
 
 ## Common Issues
 
+### 🚨 CRITICAL: Windows Path Length Limitation (Vulkan Builds)
+
+**If you're building with GPU acceleration (Vulkan feature enabled), the project MUST be in a short path.**
+
+#### The Problem
+
+Windows has a 260-character path limit (MAX_PATH), and MSBuild FileTracker has an even stricter ~240-character limit. When building whisper-rs with Vulkan, the nested CMake ExternalProject for `vulkan-shaders-gen` creates very deep directory structures that easily exceed this limit.
+
+#### The Misleading Error
+
+When the path is too long, you'll see:
+```
+CMake Error at CMakeLists.txt:2 (project):
+  No CMAKE_CXX_COMPILER could be found.
+```
+
+This error is **completely misleading**. The compiler IS installed and working fine. Windows just can't create files/directories for the compiler check because the path is too long.
+
+#### Path Length Comparison
+
+❌ **FAILS** - Long path (78 chars):
+```
+C:\Users\lolle\Desktop\Web dev\Projets personnels\Front-End\tauri-whisper-app\
+```
+- Simulated build path: ~251 characters
+- Result: CMAKE_CXX_COMPILER error during Vulkan build
+
+✅ **WORKS** - Short path (21 chars):
+```
+D:\tauri-whisper-app\
+```
+- Simulated build path: ~194 characters
+- Result: Build succeeds, GPU acceleration works
+
+#### The Solution
+
+**Keep the project in a short path:**
+- ✅ `D:\tauri-whisper-app\` (recommended)
+- ✅ `C:\twapp\`
+- ✅ `C:\dev\tauri-whisper\`
+- ❌ `C:\Users\<name>\Desktop\Web dev\Projets personnels\...` (too long)
+
+#### Why .cargo/config.toml Isn't Enough
+
+Even with these MSBuild workarounds in `.cargo/config.toml`:
+```toml
+[env]
+MSBUILDDISABLENODEREUSE = "1"
+UseMultiToolTask = "true"
+TrackFileAccess = "false"
+```
+
+...the Windows MAX_PATH limit still applies. These settings reduce overhead but don't bypass the fundamental path length restriction.
+
+#### Quick Test
+
+Check your base path length:
+```bash
+echo "D:\tauri-whisper-app" | wc -c
+# Should be < 30 characters to leave room for build directories
+```
+
+---
+
 ### Port 1420 Already in Use
 
 Kill the Vite server:
