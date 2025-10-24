@@ -74,6 +74,15 @@ jobs:
         with:
           arch: x64
 
+      - name: Set CMake compiler environment variables
+        run: |
+          # Explicitly set CMAKE_C_COMPILER and CMAKE_CXX_COMPILER for nested builds
+          $clPath = (Get-Command cl.exe).Source
+          echo "CMAKE_C_COMPILER=$clPath" | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
+          echo "CMAKE_CXX_COMPILER=$clPath" | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
+          Write-Host "✓ Set CMAKE_C_COMPILER=$clPath"
+          Write-Host "✓ Set CMAKE_CXX_COMPILER=$clPath"
+
       - name: Run Rust tests
         run: |
           cd src-tauri
