@@ -83,10 +83,13 @@ jobs:
           set(CMAKE_C_COMPILER "$clPath" CACHE FILEPATH "C compiler" FORCE)
           set(CMAKE_CXX_COMPILER "$clPath" CACHE FILEPATH "C++ compiler" FORCE)
           set(CMAKE_SYSTEM_NAME Windows)
+          set(CMAKE_C_FLAGS_INIT "/DUSEENV" CACHE STRING "C flags" FORCE)
+          set(CMAKE_CXX_FLAGS_INIT "/DUSEENV" CACHE STRING "CXX flags" FORCE)
           "@ | Out-File -FilePath $toolchainPath -Encoding utf8
 
           echo "CMAKE_TOOLCHAIN_FILE=$toolchainPath" | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
-          Write-Host "✓ Created CMake toolchain file at $toolchainPath"
+          echo "CARGO_BUILD_RUSTFLAGS=-C link-arg=/USEENV" | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
+          Write-Host "✓ Created CMake toolchain file at $toolchainPath with FileTracker disabled"
           Get-Content $toolchainPath
 
       - name: Run Rust tests
