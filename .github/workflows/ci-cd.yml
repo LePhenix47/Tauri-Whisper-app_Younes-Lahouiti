@@ -52,21 +52,12 @@ jobs:
           }
 
       - name: Install Vulkan SDK
-        run: |
-          # Use choco to install Vulkan SDK (faster and more reliable in CI)
-          Write-Host "Installing Vulkan SDK via Chocolatey..."
-          choco install vulkan-sdk -y
-
-          # Find the installed Vulkan SDK path
-          $vulkanPath = Get-ChildItem "C:\VulkanSDK" -Directory | Select-Object -First 1 -ExpandProperty FullName
-
-          if ($vulkanPath) {
-            echo "VULKAN_SDK=$vulkanPath" | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
-            Write-Host "✓ Vulkan SDK installed at $vulkanPath"
-          } else {
-            Write-Error "Failed to find Vulkan SDK installation"
-            exit 1
-          }
+        uses: jakoch/install-vulkan-sdk-action@v1
+        with:
+          vulkan_version: 1.3.290.0
+          install_runtime: true
+          cache: true
+          stripdown: true
 
       - name: Verify Vulkan SDK installation
         run: |
