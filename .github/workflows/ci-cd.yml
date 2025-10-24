@@ -74,14 +74,20 @@ jobs:
         with:
           arch: x64
 
-      - name: Set CMake compiler environment variables
+      - name: Create CMake toolchain file for nested builds
         run: |
-          # Explicitly set CMAKE_C_COMPILER and CMAKE_CXX_COMPILER for nested builds
-          $clPath = (Get-Command cl.exe).Source
-          echo "CMAKE_C_COMPILER=$clPath" | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
-          echo "CMAKE_CXX_COMPILER=$clPath" | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
-          Write-Host "✓ Set CMAKE_C_COMPILER=$clPath"
-          Write-Host "✓ Set CMAKE_CXX_COMPILER=$clPath"
+          $clPath = (Get-Command cl.exe).Source -replace '\\', '/'
+          $toolchainPath = "$env:TEMP\windows-toolchain.cmake"
+
+          @"
+          set(CMAKE_C_COMPILER "$clPath" CACHE FILEPATH "C compiler" FORCE)
+          set(CMAKE_CXX_COMPILER "$clPath" CACHE FILEPATH "C++ compiler" FORCE)
+          set(CMAKE_SYSTEM_NAME Windows)
+          "@ | Out-File -FilePath $toolchainPath -Encoding utf8
+
+          echo "CMAKE_TOOLCHAIN_FILE=$toolchainPath" | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
+          Write-Host "✓ Created CMake toolchain file at $toolchainPath"
+          Get-Content $toolchainPath
 
       - name: Run Rust tests
         run: |
