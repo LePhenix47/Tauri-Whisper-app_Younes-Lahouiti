@@ -59,11 +59,18 @@ jobs:
           cache: true
           stripdown: true
 
-      - name: Verify Vulkan SDK installation
+      - name: Verify Vulkan SDK installation and add to PATH
         run: |
           if (Test-Path $env:VULKAN_SDK) {
             Write-Host "✓ VULKAN_SDK environment variable set to: $env:VULKAN_SDK"
             Get-ChildItem $env:VULKAN_SDK | Select-Object Name
+
+            # Add Vulkan runtime DLLs to PATH for test execution
+            $vulkanBin = "$env:VULKAN_SDK\Bin"
+            if (Test-Path $vulkanBin) {
+              echo "$vulkanBin" | Out-File -Append -Encoding utf8 $env:GITHUB_PATH
+              Write-Host "✓ Added Vulkan Bin to PATH: $vulkanBin"
+            }
           } else {
             Write-Error "✗ VULKAN_SDK not set or path doesn't exist"
             exit 1
