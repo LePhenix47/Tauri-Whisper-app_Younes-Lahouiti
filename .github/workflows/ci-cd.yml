@@ -194,6 +194,35 @@ jobs:
           Write-Host "✓ Added Vulkan Runtime and Bin to PATH for test execution"
 
           cd W:\src-tauri
+
+          Write-Host "`n=== PRE-TEST DLL DIAGNOSTICS ==="
+          # Find the test executable
+          $testExe = Get-ChildItem -Path "target\debug\deps" -Filter "tauri_whisper_app-*.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($testExe) {
+            Write-Host "Test executable: $($testExe.FullName)"
+
+            # Check critical DLLs
+            Write-Host "`nChecking critical DLLs in PATH:"
+            $criticalDlls = @("libvosk.dll", "vulkan-1.dll", "msvcp140.dll", "vcruntime140.dll")
+            foreach ($dll in $criticalDlls) {
+              $found = $false
+              foreach ($pathEntry in $env:PATH -split ';') {
+                if ($pathEntry) {
+                  $fullPath = Join-Path $pathEntry $dll
+                  if (Test-Path $fullPath) {
+                    Write-Host "  ✓ $dll → $fullPath"
+                    $found = $true
+                    break
+                  }
+                }
+              }
+              if (-not $found) {
+                Write-Host "  ✗ $dll NOT FOUND"
+              }
+            }
+          }
+          Write-Host "=== END DIAGNOSTICS ===`n"
+
           $env:RUST_BACKTRACE = "1"
           $env:RUST_LOG = "debug"
           cargo test --verbose 2>&1 | Tee-Object -FilePath "W:\build.log"
