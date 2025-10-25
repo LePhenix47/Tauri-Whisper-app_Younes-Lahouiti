@@ -65,7 +65,14 @@ jobs:
             Write-Host "✓ VULKAN_SDK environment variable set to: $env:VULKAN_SDK"
             Get-ChildItem $env:VULKAN_SDK | Select-Object Name
 
-            # Add Vulkan runtime DLLs to PATH for test execution
+            # Add Vulkan runtime DLLs to PATH (Runtime\x64 contains vulkan-1.dll)
+            $vulkanRuntime = "$env:VULKAN_SDK\Runtime\x64"
+            if (Test-Path $vulkanRuntime) {
+              echo "$vulkanRuntime" | Out-File -Append -Encoding utf8 $env:GITHUB_PATH
+              Write-Host "✓ Added Vulkan Runtime to PATH: $vulkanRuntime"
+            }
+
+            # Also add Bin directory for other Vulkan tools
             $vulkanBin = "$env:VULKAN_SDK\Bin"
             if (Test-Path $vulkanBin) {
               echo "$vulkanBin" | Out-File -Append -Encoding utf8 $env:GITHUB_PATH
@@ -145,9 +152,9 @@ jobs:
 
       - name: Run Rust tests
         run: |
-          # Ensure Vulkan DLL is in PATH for this step
-          $env:PATH = "$env:VULKAN_SDK\Bin;$env:PATH"
-          Write-Host "✓ Added Vulkan Bin to PATH for test execution"
+          # Ensure Vulkan runtime DLL is in PATH for this step
+          $env:PATH = "$env:VULKAN_SDK\Runtime\x64;$env:VULKAN_SDK\Bin;$env:PATH"
+          Write-Host "✓ Added Vulkan Runtime and Bin to PATH for test execution"
 
           cd W:\src-tauri
           $env:RUST_BACKTRACE = "1"
