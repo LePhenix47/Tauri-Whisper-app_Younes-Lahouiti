@@ -150,6 +150,43 @@ jobs:
             Write-Host "Build succeeded but runtime may fail without Vulkan DLL"
           }
 
+      - name: Analyze test executable dependencies
+        run: |
+          cd W:\src-tauri
+
+          # Find the test executable
+          $testExe = Get-ChildItem -Path "target\debug\deps" -Filter "tauri_whisper_app-*.exe" | Select-Object -First 1
+
+          if ($testExe) {
+            Write-Host "Analyzing dependencies for: $($testExe.FullName)"
+
+            # Use dumpbin to show DLL dependencies
+            dumpbin /dependents $testExe.FullName
+
+            Write-Host "`nChecking if each dependency exists in PATH:"
+            $allFound = $true
+
+            # Check critical DLLs
+            $criticalDlls = @("libvosk.dll", "vulkan-1.dll", "msvcp140.dll", "vcruntime140.dll")
+            foreach ($dll in $criticalDlls) {
+              $found = $false
+              foreach ($path in $env:PATH -split ';') {
+                $fullPath = Join-Path $path $dll
+                if (Test-Path $fullPath) {
+                  Write-Host "✓ $dll found at: $fullPath"
+                  $found = $true
+                  break
+                }
+              }
+              if (-not $found) {
+                Write-Host "✗ $dll NOT FOUND in PATH"
+                $allFound = $false
+              }
+            }
+          } else {
+            Write-Host "ERROR: Test executable not found"
+          }
+
       - name: Run Rust tests
         run: |
           # Ensure Vulkan runtime DLL is in PATH for this step
