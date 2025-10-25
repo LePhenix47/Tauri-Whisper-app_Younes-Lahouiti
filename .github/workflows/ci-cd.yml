@@ -200,6 +200,8 @@ jobs:
           $testExe = Get-ChildItem -Path "target\debug\deps" -Filter "tauri_whisper_app-*.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
           if ($testExe) {
             Write-Host "Test executable: $($testExe.FullName)"
+            Write-Host "Executable architecture:"
+            dumpbin /headers $testExe.FullName | Select-String "machine"
 
             # Check critical DLLs
             Write-Host "`nChecking critical DLLs in PATH:"
@@ -210,7 +212,18 @@ jobs:
                 if ($pathEntry) {
                   $fullPath = Join-Path $pathEntry $dll
                   if (Test-Path $fullPath) {
-                    Write-Host "  ✓ $dll → $fullPath"
+                    Write-Host "`n  ✓ $dll → $fullPath"
+
+                    # Check architecture of each DLL
+                    $archInfo = dumpbin /headers $fullPath | Select-String "machine"
+                    Write-Host "    Architecture: $archInfo"
+
+                    # For libvosk.dll, also check exports
+                    if ($dll -eq "libvosk.dll") {
+                      Write-Host "    Checking exports:"
+                      dumpbin /exports $fullPath | Select-String "vosk_" | Select-Object -First 10
+                    }
+
                     $found = $true
                     break
                   }
@@ -221,7 +234,7 @@ jobs:
               }
             }
           }
-          Write-Host "=== END DIAGNOSTICS ===`n"
+          Write-Host "`n=== END DIAGNOSTICS ===`n"
 
           $env:RUST_BACKTRACE = "1"
           $env:RUST_LOG = "debug"
