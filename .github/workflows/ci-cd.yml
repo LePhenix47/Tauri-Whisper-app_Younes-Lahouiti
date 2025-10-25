@@ -57,7 +57,7 @@ jobs:
           vulkan_version: 1.3.290.0
           install_runtime: true
           cache: true
-          stripdown: true
+          stripdown: false
 
       - name: Verify Vulkan SDK installation and add to PATH
         run: |
@@ -103,28 +103,44 @@ jobs:
           Write-Host "✓ Created CMake toolchain file at $toolchainPath"
           Get-Content $toolchainPath
 
-      - name: Verify Vulkan SDK structure
+      - name: Investigate Vulkan SDK directory
         run: |
-          Write-Host "Vulkan SDK directory structure:"
+          Write-Host "=== Vulkan SDK Directory Structure ==="
+          Write-Host "VULKAN_SDK path: $env:VULKAN_SDK"
+
           if (Test-Path "$env:VULKAN_SDK") {
-            Get-ChildItem "$env:VULKAN_SDK" -Recurse -Filter "*.dll" | Select-Object FullName, Length
+            Write-Host "`nTop-level directories:"
+            Get-ChildItem "$env:VULKAN_SDK" -Directory | Select-Object Name
+
+            Write-Host "`nAll DLL files in Vulkan SDK:"
+            Get-ChildItem "$env:VULKAN_SDK" -Recurse -Filter "*.dll" -ErrorAction SilentlyContinue | Select-Object FullName, Length
+          } else {
+            Write-Host "ERROR: VULKAN_SDK directory does not exist!"
           }
 
-          Write-Host "`nSearching for vulkan-1.dll in common locations:"
+          Write-Host "`n=== Searching for vulkan-1.dll ==="
           $searchPaths = @(
             "$env:VULKAN_SDK\Bin\vulkan-1.dll",
             "$env:VULKAN_SDK\bin\vulkan-1.dll",
             "$env:VULKAN_SDK\Lib\vulkan-1.dll",
             "$env:VULKAN_SDK\Runtime\x64\vulkan-1.dll",
-            "C:\Windows\System32\vulkan-1.dll"
+            "C:\Windows\System32\vulkan-1.dll",
+            "C:\Windows\SysWOW64\vulkan-1.dll"
           )
+          $found = $false
           foreach ($path in $searchPaths) {
             if (Test-Path $path) {
-              Write-Host "✓ Found at: $path"
-              Get-Item $path | Select-Object Name, Length
+              Write-Host "✓ FOUND at: $path"
+              Get-Item $path | Select-Object Name, Length, LastWriteTime
+              $found = $true
             } else {
-              Write-Host "✗ Not found at: $path"
+              Write-Host "✗ Not at: $path"
             }
+          }
+
+          if (-not $found) {
+            Write-Host "`nWARNING: vulkan-1.dll not found in any expected location"
+            Write-Host "Build succeeded but runtime may fail without Vulkan DLL"
           }
 
       - name: Run Rust tests
