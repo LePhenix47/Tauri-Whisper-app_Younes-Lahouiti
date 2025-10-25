@@ -238,6 +238,33 @@ jobs:
                       Write-Host "    Total exports matching 'vosk_': $(($exports | Measure-Object).Count)"
                       Write-Host "    First 20 exports:"
                       $exports | Select-Object -First 20
+
+                      # Check libvosk.dll dependencies
+                      Write-Host "`n    Checking libvosk.dll dependencies:"
+                      $dumpbinOutput = dumpbin /dependents $fullPath
+                      $dependencies = $dumpbinOutput | Select-String "\.dll" | ForEach-Object { $_.Line.Trim() }
+
+                      foreach ($dep in $dependencies) {
+                        if ($dep -match "(\S+\.dll)") {
+                          $depName = $matches[1]
+                          $depFound = $false
+
+                          foreach ($pathEntry in $env:PATH -split ';') {
+                            if ($pathEntry) {
+                              $depPath = Join-Path $pathEntry $depName
+                              if (Test-Path $depPath) {
+                                Write-Host "      ✓ $depName"
+                                $depFound = $true
+                                break
+                              }
+                            }
+                          }
+
+                          if (-not $depFound) {
+                            Write-Host "      ✗ $depName MISSING"
+                          }
+                        }
+                      }
                     }
 
                     $found = $true
