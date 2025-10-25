@@ -103,8 +103,26 @@ jobs:
           Write-Host "✓ Created CMake toolchain file at $toolchainPath"
           Get-Content $toolchainPath
 
+      - name: Verify Vulkan DLL accessible
+        run: |
+          Write-Host "Current PATH entries:"
+          $env:PATH -split ';' | Where-Object { $_ -match 'vulkan' -or $_ -match 'VulkanSDK' } | ForEach-Object { Write-Host "  $_" }
+
+          $vulkanDll = "$env:VULKAN_SDK\Bin\vulkan-1.dll"
+          if (Test-Path $vulkanDll) {
+            Write-Host "✓ Found vulkan-1.dll at: $vulkanDll"
+            Get-Item $vulkanDll | Select-Object Name, Length, LastWriteTime
+          } else {
+            Write-Error "✗ vulkan-1.dll not found at: $vulkanDll"
+            exit 1
+          }
+
       - name: Run Rust tests
         run: |
+          # Ensure Vulkan DLL is in PATH for this step
+          $env:PATH = "$env:VULKAN_SDK\Bin;$env:PATH"
+          Write-Host "✓ Added Vulkan Bin to PATH for test execution"
+
           cd W:\src-tauri
           $env:RUST_BACKTRACE = "1"
           $env:RUST_LOG = "debug"
