@@ -220,8 +220,24 @@ jobs:
 
                     # For libvosk.dll, also check exports
                     if ($dll -eq "libvosk.dll") {
-                      Write-Host "    Checking exports:"
-                      dumpbin /exports $fullPath | Select-String "vosk_" | Select-Object -First 10
+                      Write-Host "    Checking critical exports:"
+                      $exports = dumpbin /exports $fullPath | Select-String "vosk_"
+
+                      # Check for standard API functions
+                      $hasModelNew = $exports | Select-String "vosk_model_new"
+                      $hasRecognizerNew = $exports | Select-String "vosk_recognizer_new"
+
+                      if ($hasModelNew -and $hasRecognizerNew) {
+                        Write-Host "      ✓ Standard API present (vosk_model_new, vosk_recognizer_new found)"
+                      } else {
+                        Write-Host "      ✗ MISSING standard API"
+                        if (-not $hasModelNew) { Write-Host "        Missing: vosk_model_new" }
+                        if (-not $hasRecognizerNew) { Write-Host "        Missing: vosk_recognizer_new" }
+                      }
+
+                      Write-Host "    Total exports matching 'vosk_': $(($exports | Measure-Object).Count)"
+                      Write-Host "    First 20 exports:"
+                      $exports | Select-Object -First 20
                     }
 
                     $found = $true
