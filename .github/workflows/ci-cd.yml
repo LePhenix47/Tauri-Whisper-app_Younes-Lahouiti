@@ -203,6 +203,9 @@ jobs:
             Write-Host "Executable architecture:"
             dumpbin /headers $testExe.FullName | Select-String "machine"
 
+            Write-Host "`nALL DLL dependencies of test executable:"
+            dumpbin /dependents $testExe.FullName | Select-String "\.dll"
+
             # Check critical DLLs
             Write-Host "`nChecking critical DLLs in PATH:"
             $criticalDlls = @("libvosk.dll", "vulkan-1.dll", "msvcp140.dll", "vcruntime140.dll")
