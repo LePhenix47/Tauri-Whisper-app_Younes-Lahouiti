@@ -1,17 +1,21 @@
 import { Select, SelectItem, Slider, Switch, Input, Tooltip } from "@heroui/react";
 import { IoInformationCircleOutline } from "react-icons/io5";
-import { useTranscriptionSettingsStore } from "@app/stores/useTranscriptionSettingsStore";
+import {
+  useTranscriptionSettings,
+  useSetSamplingStrategy,
+  useSetTemperature,
+  useSetNoContext,
+  useSetInitialPrompt,
+} from "@app/stores/useTranscriptionSettingsStore";
 import {
   SECTIONS,
   SLIDER_CONFIGS,
-  SELECT_CONFIGS,
-  SWITCH_CONFIGS,
-  INPUT_CONFIGS,
   type SliderConfig,
   type SelectConfig,
   type SwitchConfig,
   type InputConfig,
 } from "./advancedSettingsConfig";
+import type { GreedySettings, BeamSearchSettings } from "@app/types/transcriptionSettings";
 import "./AdvancedSettingsPanel.scss";
 
 type AdvancedSettingsPanelProps = {
@@ -19,28 +23,33 @@ type AdvancedSettingsPanelProps = {
 };
 
 export function AdvancedSettingsPanel({ isDisabled = false }: AdvancedSettingsPanelProps) {
-  const settings = useTranscriptionSettingsStore((state) => state.settings);
-  const setSamplingStrategy = useTranscriptionSettingsStore(
-    (state) => state.setSamplingStrategy
-  );
-  const setTemperature = useTranscriptionSettingsStore((state) => state.setTemperature);
-  const setNoContext = useTranscriptionSettingsStore((state) => state.setNoContext);
-  const setInitialPrompt = useTranscriptionSettingsStore((state) => state.setInitialPrompt);
+  // Use custom hooks for stable selectors
+  const settings = useTranscriptionSettings();
+  const setSamplingStrategy = useSetSamplingStrategy();
+  const setTemperature = useSetTemperature();
+  const setNoContext = useSetNoContext();
+  const setInitialPrompt = useSetInitialPrompt();
 
+  // Type-safe extraction of sampling strategy values
   const isSamplingGreedy = settings.sampling_strategy.type === "greedy";
-  const bestOf = isSamplingGreedy ? settings.sampling_strategy.best_of : 5;
-  const beamSize = !isSamplingGreedy ? settings.sampling_strategy.beam_size : 5;
-  const patience = !isSamplingGreedy ? settings.sampling_strategy.patience : -1.0;
+  const bestOf = isSamplingGreedy ? (settings.sampling_strategy as GreedySettings).best_of : 5;
+  const beamSize = !isSamplingGreedy ? (settings.sampling_strategy as BeamSearchSettings).beam_size : 5;
+  const patience = !isSamplingGreedy ? (settings.sampling_strategy as BeamSearchSettings).patience : -1.0;
 
   // ============================================================================
   // HANDLERS
   // ============================================================================
 
   const handleSamplingTypeChange = (type: string) => {
-    if (type === "greedy") {
-      setSamplingStrategy({ type: "greedy", best_of: 5 });
-    } else {
-      setSamplingStrategy({ type: "beam_search", beam_size: 5, patience: -1.0 });
+    switch (type) {
+      case "greedy":
+        setSamplingStrategy({ type: "greedy", best_of: 5 });
+        break;
+      case "beam_search":
+        setSamplingStrategy({ type: "beam_search", beam_size: 5, patience: -1.0 });
+        break;
+      default:
+        console.warn(`Unknown sampling type: ${type}`);
     }
   };
 
@@ -73,37 +82,29 @@ export function AdvancedSettingsPanel({ isDisabled = false }: AdvancedSettingsPa
   };
 
   // ============================================================================
-  // VALUE GETTERS
+  // VALUE GETTERS (Using Map for O(1) lookup instead of switch)
   // ============================================================================
 
+  const sliderValueMap = new Map<string, number>([
+    ["bestOf", bestOf],
+    ["beamSize", beamSize],
+    ["patience", patience],
+    ["temperature", settings.temperature],
+  ]);
+
+  const sliderHandlerMap = new Map<string, (value: number | number[]) => void>([
+    ["bestOf", handleBestOfChange],
+    ["beamSize", handleBeamSizeChange],
+    ["patience", handlePatienceChange],
+    ["temperature", handleTemperatureChange],
+  ]);
+
   const getSliderValue = (sliderId: string): number => {
-    switch (sliderId) {
-      case "bestOf":
-        return bestOf;
-      case "beamSize":
-        return beamSize;
-      case "patience":
-        return patience;
-      case "temperature":
-        return settings.temperature;
-      default:
-        return 0;
-    }
+    return sliderValueMap.get(sliderId) ?? 0;
   };
 
   const getSliderHandler = (sliderId: string) => {
-    switch (sliderId) {
-      case "bestOf":
-        return handleBestOfChange;
-      case "beamSize":
-        return handleBeamSizeChange;
-      case "patience":
-        return handlePatienceChange;
-      case "temperature":
-        return handleTemperatureChange;
-      default:
-        return () => {};
-    }
+    return sliderHandlerMap.get(sliderId) ?? (() => {});
   };
 
   // ============================================================================
@@ -173,20 +174,35 @@ export function AdvancedSettingsPanel({ isDisabled = false }: AdvancedSettingsPa
     />
   );
 
+  // Type guards for better discrimination
+  const isSliderConfig = (control: SliderConfig | SelectConfig | SwitchConfig | InputConfig): control is SliderConfig => {
+    return "marks" in control;
+  };
+
+  const isSelectConfig = (control: SliderConfig | SelectConfig | SwitchConfig | InputConfig): control is SelectConfig => {
+    return "options" in control;
+  };
+
+  const isInputConfig = (control: SliderConfig | SelectConfig | SwitchConfig | InputConfig): control is InputConfig => {
+    return "placeholder" in control;
+  };
+
   const renderControl = (control: SliderConfig | SelectConfig | SwitchConfig | InputConfig) => {
-    if ("marks" in control) {
-      return renderSlider(control as SliderConfig);
+    // Use guard clauses for early returns
+    if (isSliderConfig(control)) {
+      return renderSlider(control);
     }
-    if ("options" in control) {
-      return renderSelect(control as SelectConfig);
+
+    if (isSelectConfig(control)) {
+      return renderSelect(control);
     }
-    if ("hint" in control && !("placeholder" in control)) {
-      return renderSwitch(control as SwitchConfig);
+
+    if (isInputConfig(control)) {
+      return renderInput(control);
     }
-    if ("placeholder" in control) {
-      return renderInput(control as InputConfig);
-    }
-    return null;
+
+    // Default to switch (remaining type)
+    return renderSwitch(control as SwitchConfig);
   };
 
   const renderSection = (section: typeof SECTIONS[0]) => (

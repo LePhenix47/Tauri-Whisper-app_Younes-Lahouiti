@@ -3,7 +3,6 @@ import {
   startVoskSession,
   processVoskChunk,
   endVoskSession,
-  type VoskTranscriptionResult,
 } from "@api/vosk";
 
 interface UseVoskLiveTranscriptionOptions {

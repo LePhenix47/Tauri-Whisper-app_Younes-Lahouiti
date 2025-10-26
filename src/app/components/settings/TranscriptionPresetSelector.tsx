@@ -1,5 +1,10 @@
 import { RadioGroup, Switch } from "@heroui/react";
-import { useTranscriptionSettingsStore } from "@app/stores/useTranscriptionSettingsStore";
+import {
+  useTranscriptionSettings,
+  useShowAdvanced,
+  useSetPreset,
+  useToggleAdvanced,
+} from "@app/stores/useTranscriptionSettingsStore";
 import { PRESET_METADATA, type QualityPreset } from "@app/types/transcriptionSettings";
 import { AdvancedSettingsPanel } from "./AdvancedSettingsPanel";
 import "./TranscriptionPresetSelector.scss";
@@ -11,10 +16,10 @@ type TranscriptionPresetSelectorProps = {
 export function TranscriptionPresetSelector({
   isDisabled = false,
 }: TranscriptionPresetSelectorProps) {
-  const preset = useTranscriptionSettingsStore((state) => state.settings.preset);
-  const setPreset = useTranscriptionSettingsStore((state) => state.setPreset);
-  const showAdvanced = useTranscriptionSettingsStore((state) => state.showAdvanced);
-  const toggleAdvanced = useTranscriptionSettingsStore((state) => state.toggleAdvanced);
+  const { preset } = useTranscriptionSettings();
+  const showAdvanced = useShowAdvanced();
+  const setPreset = useSetPreset();
+  const toggleAdvanced = useToggleAdvanced();
 
   const presets: Array<Exclude<QualityPreset, "custom">> = ["fast", "balanced", "best"];
 

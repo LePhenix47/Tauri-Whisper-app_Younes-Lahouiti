@@ -186,7 +186,7 @@ export const SLIDER_CONFIGS: Record<string, SliderConfig> = {
 // SELECT CONFIGURATIONS
 // ============================================================================
 
-export const SELECT_CONFIGS: Record<string, SelectConfig> = {
+const SELECT_CONFIGS: Record<string, SelectConfig> = {
   strategyType: {
     id: "strategyType",
     label: "Strategy Type",
@@ -201,7 +201,7 @@ export const SELECT_CONFIGS: Record<string, SelectConfig> = {
 // SWITCH CONFIGURATIONS
 // ============================================================================
 
-export const SWITCH_CONFIGS: Record<string, SwitchConfig> = {
+const SWITCH_CONFIGS: Record<string, SwitchConfig> = {
   noContext: {
     id: "noContext",
     label: "No Context",
@@ -213,7 +213,7 @@ export const SWITCH_CONFIGS: Record<string, SwitchConfig> = {
 // INPUT CONFIGURATIONS
 // ============================================================================
 
-export const INPUT_CONFIGS: Record<string, InputConfig> = {
+const INPUT_CONFIGS: Record<string, InputConfig> = {
   initialPrompt: {
     id: "initialPrompt",
     label: "Initial Prompt (Optional)",

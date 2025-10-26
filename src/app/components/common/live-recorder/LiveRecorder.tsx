@@ -61,7 +61,6 @@ export default function LiveRecorder() {
 
   // Vosk transcription hook
   const {
-    isActive: isTranscribing,
     partialText,
     finalText,
     error: transcriptionError,
