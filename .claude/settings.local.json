@@ -39,7 +39,7 @@
       "Bash(powershell:*)",
       "Bash(set:*)",
       "Bash(./build_with_vulkan.bat)",
-      "Bash(cmake --build:*)"
+      "Bash(git push)"
     ],
     "deny": [],
     "ask": []
