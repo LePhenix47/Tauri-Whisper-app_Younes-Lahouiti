@@ -256,7 +256,7 @@ jobs:
                             if ($pathEntry) {
                               $depPath = Join-Path $pathEntry $depName
                               if (Test-Path $depPath) {
-                                Write-Host "      ✓ $depName"
+                                Write-Host "      ✓ $depName → $depPath"
                                 $depFound = $true
                                 break
                               }
@@ -264,7 +264,7 @@ jobs:
                           }
 
                           if (-not $depFound) {
-                            Write-Host "      ✗ $depName MISSING"
+                            Write-Host "      ✗ $depName MISSING IN PATH"
                           }
                         }
                       }
@@ -284,7 +284,9 @@ jobs:
 
           $env:RUST_BACKTRACE = "1"
           $env:RUST_LOG = "debug"
-          cargo test --verbose 2>&1 | Tee-Object -FilePath "W:\build.log"
+
+          Write-Host "`n=== RUNNING TESTS (--lib to avoid binary globals) ==="
+          cargo test --lib --verbose 2>&1 | Tee-Object -FilePath "W:\build.log"
         continue-on-error: true
 
       - name: Upload build log on failure
