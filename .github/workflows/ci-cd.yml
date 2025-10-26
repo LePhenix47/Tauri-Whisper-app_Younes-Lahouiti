@@ -285,8 +285,8 @@ jobs:
           $env:RUST_BACKTRACE = "1"
           $env:RUST_LOG = "debug"
 
-          Write-Host "`n=== RUNNING TESTS (--lib to avoid binary globals) ==="
-          cargo test --lib --verbose 2>&1 | Tee-Object -FilePath "W:\build.log"
+          Write-Host "`n=== RUNNING TESTS (integration tests only, no binary init) ==="
+          cargo test --test test_commands --verbose 2>&1 | Tee-Object -FilePath "W:\build.log"
         continue-on-error: true
 
       - name: Upload build log on failure
