@@ -11,6 +11,7 @@ import {
 import { useTranscriptionStore } from "@app/stores/useTranscriptionStore";
 import { useTranscriptionSettingsStore } from "@app/stores/useTranscriptionSettingsStore";
 import { useListModels } from "@app/hooks/useModels";
+import { validateFileForTranscription } from "@app/utils/fileValidation";
 import type { ModelName } from "@api/models";
 import "./index.scss";
 
@@ -87,6 +88,14 @@ function TranscribePage() {
     setEndTime(null);
 
     try {
+      // Validate file exists before starting transcription
+      const validation = await validateFileForTranscription(selectedFilePath);
+      if (!validation.isValid) {
+        setError(validation.error || "File validation failed");
+        setTranscribing(false);
+        return;
+      }
+
       const transcriptionResult = await transcribeFileAdvanced(
         selectedFilePath,
         selectedModel,

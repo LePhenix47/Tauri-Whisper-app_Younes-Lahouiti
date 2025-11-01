@@ -7,6 +7,7 @@ import {
   subtitleTextToUrl,
   revokeBlobUrls,
 } from "@app/utils/fileToBlob";
+import { validateFileExists } from "@app/utils/fileValidation";
 import "./TranscriptionPreview.scss";
 
 type TranscriptionPreviewProps = {
@@ -37,14 +38,20 @@ export function TranscriptionPreview({
         setIsLoading(true);
         setError(null);
 
+        // Validate file exists before attempting to load
+        const validation = await validateFileExists(mediaFilePath);
+        if (!validation.isValid && isMounted) {
+          setError(validation.error || "File validation failed");
+          return;
+        }
+
         // Determine media type
         const type = getMediaType(mediaFilePath);
         setMediaType(type);
 
-        // Convert file path to blob URL
+        // Convert file path to streaming URL
         const url = await pathToMediaUrl(mediaFilePath);
         if (!isMounted) {
-          URL.revokeObjectURL(url);
           return;
         }
         setMediaUrl(url);
@@ -59,9 +66,7 @@ export function TranscriptionPreview({
       } catch (err) {
         if (isMounted) {
           setError(
-            err instanceof Error
-              ? err.message
-              : "Failed to load media preview"
+            err instanceof Error ? err.message : "Failed to load media preview"
           );
         }
       } finally {

@@ -18,15 +18,27 @@ export function getMediaType(filePath: string): "video" | "audio" {
  * Convert a local file path to a browser-usable streaming URL
  * @param path - Absolute path to the media file
  * @returns Secure URL that streams the file without loading it into memory
+ * @throws Error if path is invalid or conversion fails
  */
 export async function pathToMediaUrl(path: string): Promise<string> {
+  if (!path || path.trim() === "") {
+    throw new Error("File path cannot be empty");
+  }
+
   try {
     // Use Tauri's convertFileSrc to create a streaming URL
     // This avoids loading the entire file into memory (critical for large videos)
-    return convertFileSrc(path);
+    const url = convertFileSrc(path);
+
+    // Validate the generated URL
+    if (!url || url.trim() === "") {
+      throw new Error("Generated URL is invalid");
+    }
+
+    return url;
   } catch (error) {
     throw new Error(
-      `Failed to convert file path: ${error instanceof Error ? error.message : "Unknown error"}`
+      `Failed to convert file path to streaming URL: ${error instanceof Error ? error.message : "Unknown error"}`
     );
   }
 }
