@@ -499,6 +499,74 @@ fn hello_world() -> String {
     "Hello World from Rust".to_string()
 }
 
+/// Get system GPU information
+/// Returns GPU name, vendor, and driver info if available
+#[tauri::command]
+fn get_gpu_info() -> Result<GpuInfo, String> {
+    // Use spawn_blocking for potentially blocking system calls
+    let gpu_info = detect_gpu().map_err(|e| format!("{:#}", e))?;
+
+    Ok(gpu_info)
+}
+
+#[derive(Debug, Serialize)]
+struct GpuInfo {
+    has_vulkan: bool,
+    vulkan_version: Option<String>,
+    gpu_name: Option<String>,
+    vendor: Option<String>,
+}
+
+fn detect_gpu() -> Result<GpuInfo> {
+    // Check if Vulkan SDK environment variable is set
+    let vulkan_sdk = std::env::var("VULKAN_SDK").ok();
+    let has_vulkan = vulkan_sdk.is_some();
+
+    // Try to get GPU info via system commands (platform-specific)
+    let (gpu_name, vendor) = get_gpu_details()?;
+
+    Ok(GpuInfo {
+        has_vulkan,
+        vulkan_version: vulkan_sdk,
+        gpu_name,
+        vendor,
+    })
+}
+
+#[cfg(target_os = "windows")]
+fn get_gpu_details() -> Result<(Option<String>, Option<String>)> {
+    // Use WMIC to get GPU info on Windows
+    let output = Command::new("wmic")
+        .args(["path", "win32_VideoController", "get", "name,AdapterCompatibility"])
+        .output()
+        .context("Failed to execute wmic command")?;
+
+    if !output.status.success() {
+        return Ok((None, None));
+    }
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let lines: Vec<&str> = stdout.lines().skip(1).collect(); // Skip header
+
+    if let Some(line) = lines.first() {
+        let parts: Vec<&str> = line.split_whitespace().collect();
+        if parts.len() >= 2 {
+            let vendor = Some(parts[0].to_string());
+            let gpu_name = Some(parts[1..].join(" "));
+            return Ok((gpu_name, vendor));
+        }
+    }
+
+    Ok((None, None))
+}
+
+#[cfg(not(target_os = "windows"))]
+fn get_gpu_details() -> Result<(Option<String>, Option<String>)> {
+    // On Linux/macOS, use lspci or system_profiler
+    // For now, return None (can be expanded later)
+    Ok((None, None))
+}
+
 fn get_models_dir_internal(app: &AppHandle) -> Result<PathBuf> {
     let app_data_dir = app
         .path()
@@ -622,6 +690,7 @@ fn main() {
         .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![
             hello_world,
+            get_gpu_info,
             test_whisper,
             get_models_dir,
             download_model,
