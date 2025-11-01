@@ -1,15 +1,15 @@
 @use "../../../../sass/utils/" as *;
 
 .transcription-preview {
-  margin-bottom: 2rem;
-  padding: 1.5rem;
+  margin-bottom: 32px;
+  padding: 24px;
   background-color: var(--bg-secondary, #f8f9fa);
   border-radius: 12px;
   border: 1px solid var(--border-color, #e0e0e0);
 
   &__title {
-    margin: 0 0 1rem;
-    font-size: 1.25rem;
+    margin: 0 0 16px;
+    font-size: 20px;
     font-weight: 500;
     color: var(--color-primary, #333);
   }
@@ -17,7 +17,7 @@
   &__player-wrapper {
     position: relative;
     width: 100%;
-    margin-bottom: 1rem;
+    margin-bottom: 16px;
     background-color: #000;
     border-radius: 8px;
     overflow: hidden;
@@ -39,38 +39,41 @@
 
   &__hint {
     margin: 0;
-    font-size: 0.875rem;
+    font-size: 14px;
     color: var(--color-secondary, #666);
     text-align: center;
   }
 
   // Loading state
   &--loading {
-    @include center-flex(1rem);
+    @include center-flex(16px);
     min-height: 200px;
-    padding: 3rem;
+    padding: 48px;
   }
 
   // Error state
   &--error {
-    @include center-flex(0.5rem);
+    @include center-flex(8px);
     flex-direction: column;
     min-height: 150px;
-    padding: 2rem;
+    padding: 32px;
     background-color: var(--bg-danger, #fff5f5);
     border-color: var(--color-danger, #ff4444);
   }
 
   &__error-message {
-    margin: 0 0 0.5rem;
-    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 8px;
+    font-size: 16px;
     font-weight: 500;
     color: var(--color-danger, #ff4444);
   }
 
   &__error-hint {
     margin: 0;
-    font-size: 0.875rem;
+    font-size: 14px;
     color: var(--color-secondary, #666);
   }
 

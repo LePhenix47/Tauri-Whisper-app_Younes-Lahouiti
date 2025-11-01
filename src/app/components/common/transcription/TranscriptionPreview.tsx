@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Spinner } from "@heroui/react";
+import { IoWarning } from "react-icons/io5";
 import {
   pathToMediaUrl,
   getMediaType,
@@ -94,7 +95,9 @@ export function TranscriptionPreview({
   if (error) {
     return (
       <div className="transcription-preview transcription-preview--error">
-        <p className="transcription-preview__error-message">⚠️ {error}</p>
+        <p className="transcription-preview__error-message">
+          <IoWarning size={20} /> {error}
+        </p>
         <p className="transcription-preview__error-hint">
           The media file may have been moved or deleted.
         </p>

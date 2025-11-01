@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
 import { open } from "@tauri-apps/plugin-dialog";
+import { IoFolderOpen, IoMusicalNotes, IoWarning } from "react-icons/io5";
 import "./FileDropzone.scss";
 
 interface FileDropzoneProps {
@@ -141,12 +142,12 @@ export function FileDropzone({
         <div className="file-dropzone__content">
           {isDragActive ? (
             <>
-              <div className="file-dropzone__icon">📂</div>
+              <IoFolderOpen className="file-dropzone__icon" size={48} />
               <p className="file-dropzone__text">Drop files here...</p>
             </>
           ) : (
             <>
-              <div className="file-dropzone__icon">🎵</div>
+              <IoMusicalNotes className="file-dropzone__icon" size={48} />
               <p className="file-dropzone__text">
                 Drag & drop audio/video files here, or click to select
               </p>
@@ -160,7 +161,7 @@ export function FileDropzone({
 
       {error && (
         <div className="file-dropzone__error" role="alert">
-          ⚠️ {error}
+          <IoWarning size={16} /> {error}
         </div>
       )}
     </div>

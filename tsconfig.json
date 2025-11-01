@@ -42,6 +42,9 @@
       "@constants/*": [
         "./src/constants/*"
       ],
+      "@utils/*": [
+        "./src/utils/*"
+      ],
       "@assets/*": [
         "./src/assets/*"
       ],

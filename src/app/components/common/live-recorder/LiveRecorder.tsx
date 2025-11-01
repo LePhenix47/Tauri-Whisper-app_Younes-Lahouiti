@@ -5,6 +5,7 @@ import { Button, Chip, Select, SelectItem } from '@heroui/react';
 import { MdMic, MdStop, MdWarning, MdPlayArrow, MdDelete } from 'react-icons/md';
 import { useListVoskModels } from '@app/hooks/useModels';
 import { useVoskLiveTranscription } from '@app/hooks/useVoskLiveTranscription';
+import { getRootCssVariable } from '@utils/css';
 import './LiveRecorder.scss';
 
 /**
@@ -83,8 +84,8 @@ export default function LiveRecorder() {
     // Create WaveSurfer instance for recording
     const wavesurfer = WaveSurfer.create({
       container: waveformRef.current,
-      waveColor: 'rgb(100, 149, 237)',
-      progressColor: 'rgb(65, 105, 225)',
+      waveColor: getRootCssVariable('--color-blue-400'),
+      progressColor: getRootCssVariable('--color-blue-600'),
       cursorColor: 'transparent',
       barWidth: 3,
       barGap: 2,
@@ -153,12 +154,16 @@ export default function LiveRecorder() {
       playbackWavesurferRef.current.destroy();
     }
 
+    // Get CSS variable colors from document
+    const getCSSVar = (varName: string) =>
+      getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+
     // Create new WaveSurfer instance for playback
     const playbackWavesurfer = WaveSurfer.create({
       container: playbackWaveformRef.current,
-      waveColor: 'rgb(100, 200, 100)',
-      progressColor: 'rgb(50, 150, 50)',
-      cursorColor: '#333',
+      waveColor: getRootCssVariable('--color-green-400'),
+      progressColor: getRootCssVariable('--color-green-600'),
+      cursorColor: getRootCssVariable('--color-grey-800'),
       barWidth: 2,
       barGap: 1,
       barRadius: 2,
@@ -352,7 +357,7 @@ export default function LiveRecorder() {
           ))}
         </Select>
         {voskModels.length === 0 && (
-          <p style={{ fontSize: '0.875rem', color: 'var(--color-danger)', marginTop: '0.5rem' }}>
+          <p className="live-recorder__no-models-warning">
             No Vosk models downloaded. Visit the Models page to download one.
           </p>
         )}

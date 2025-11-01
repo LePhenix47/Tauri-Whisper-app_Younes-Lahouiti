@@ -1,5 +1,5 @@
 import { Button } from "@heroui/react";
-import { IoClose, IoPlay, IoVideocam } from "react-icons/io5";
+import { IoClose, IoPlay, IoVideocam, IoWarning } from "react-icons/io5";
 import { AiTwotoneAudio } from "react-icons/ai";
 import type { TranscriptionProgress } from "@api/endpoints/transcription";
 import "./FileDropzone.scss";
@@ -146,7 +146,7 @@ export function FilePreview({
 
       {error && (
         <p className="file-preview__error" role="alert">
-          ⚠️ {error}
+          <IoWarning size={16} /> {error}
         </p>
       )}
     </div>
