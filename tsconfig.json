@@ -39,6 +39,9 @@
       "@api/*": [
         "./src/api/*"
       ],
+      "@constants/*": [
+        "./src/constants/*"
+      ],
       "@assets/*": [
         "./src/assets/*"
       ],

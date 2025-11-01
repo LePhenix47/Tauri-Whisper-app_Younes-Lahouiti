@@ -167,13 +167,17 @@
   &__select-label {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 8px;
     font-weight: 500;
   }
 
   &__select-size {
-    font-size: 0.875rem;
+    font-size: 14px;
     color: var(--color-secondary);
+  }
+
+  &__downloaded-chip {
+    margin-left: 8px;
   }
 
   // Model Preview

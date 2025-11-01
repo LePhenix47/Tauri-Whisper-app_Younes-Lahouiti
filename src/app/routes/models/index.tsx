@@ -23,44 +23,7 @@ import {
   useListVoskModels,
 } from "@app/hooks/useModels";
 import type { ModelName } from "@api/models";
-
-const AVAILABLE_MODELS: Array<{
-  name: ModelName;
-  label: string;
-  size: string;
-  description: string;
-}> = [
-  {
-    name: "tiny",
-    label: "Tiny",
-    size: "77 MB",
-    description: "Fastest, lowest accuracy. Good for testing.",
-  },
-  {
-    name: "base",
-    label: "Base",
-    size: "148 MB",
-    description: "Balanced speed and accuracy. Recommended for most users.",
-  },
-  {
-    name: "small",
-    label: "Small",
-    size: "488 MB",
-    description: "Better accuracy, slower processing.",
-  },
-  {
-    name: "medium",
-    label: "Medium",
-    size: "1.5 GB",
-    description: "High accuracy, requires more resources.",
-  },
-  {
-    name: "large-v3-turbo",
-    label: "Large V3 Turbo",
-    size: "1.6 GB",
-    description: "Best accuracy, slowest processing. Requires powerful hardware.",
-  },
-];
+import { WHISPER_MODELS, getWhisperModelNames, extractModelName } from "@constants/whisper-models";
 
 const AVAILABLE_VOSK_MODELS: Array<{
   name: string;
@@ -167,19 +130,13 @@ function ModelsPage() {
     testWhisperMutation.mutate(modelName);
   };
 
-  const getModelInfo = (modelName: string) => {
-    return AVAILABLE_MODELS.find((m) => m.name === modelName);
-  };
-
   const isModelDownloaded = (modelName: ModelName) => {
     return downloadedModels.some((model) =>
       model.toLowerCase().includes(modelName)
     );
   };
 
-  const selectedModelInfo = AVAILABLE_MODELS.find(
-    (m) => m.name === selectedModel
-  );
+  const selectedModelInfo = WHISPER_MODELS[selectedModel];
 
   const handleDownloadVosk = () => {
     downloadVoskModelMutation.mutate(selectedVoskModel);
@@ -233,22 +190,15 @@ function ModelsPage() {
                 ) : downloadedModels.length > 0 ? (
                   <div className="models-page__models-list">
                     {downloadedModels.map((modelFile) => {
-                      const modelNameMatch = modelFile.match(
-                        /ggml-(tiny|base|small|medium|large-v3-turbo)/
-                      );
-                      const modelName = modelNameMatch
-                        ? (modelNameMatch[1] as ModelName)
-                        : null;
-                      const modelInfo = modelName
-                        ? getModelInfo(modelName)
-                        : null;
+                      const modelName = extractModelName(modelFile);
+                      const modelInfo = modelName ? WHISPER_MODELS[modelName] : null;
 
                       return (
                         <div key={modelFile} className="models-page__model-item">
                           <div className="models-page__model-info">
                             <div className="models-page__model-header">
                               <h3 className="models-page__model-name">
-                                {modelInfo?.label || modelFile}
+                                {modelInfo?.displayName || modelFile}
                               </h3>
                               <Chip
                                 size="sm"
@@ -262,7 +212,7 @@ function ModelsPage() {
                             {modelInfo && (
                               <div className="models-page__model-details">
                                 <span className="models-page__model-size">
-                                  {modelInfo.size}
+                                  {modelInfo.sizeMB}
                                 </span>
                                 <span className="models-page__model-separator">
                                   •
@@ -345,26 +295,29 @@ function ModelsPage() {
                     isDisabled={downloadModelMutation.isPending}
                     className="models-page__select"
                   >
-                    {AVAILABLE_MODELS.map((model) => (
-                      <SelectItem
-                        key={model.name}
-                        textValue={`${model.label} (${model.size})`}
-                      >
-                        <div className="models-page__select-item">
-                          <span className="models-page__select-label">
-                            {model.label}
-                            {isModelDownloaded(model.name) && (
-                              <Chip size="sm" color="success" variant="dot">
-                                Downloaded
-                              </Chip>
-                            )}
-                          </span>
-                          <span className="models-page__select-size">
-                            {model.size}
-                          </span>
-                        </div>
-                      </SelectItem>
-                    ))}
+                    {getWhisperModelNames().map((modelName) => {
+                      const model = WHISPER_MODELS[modelName];
+                      return (
+                        <SelectItem
+                          key={model.name}
+                          textValue={`${model.displayName} (${model.sizeMB})`}
+                        >
+                          <div className="models-page__select-item">
+                            <span className="models-page__select-label">
+                              {model.displayName}
+                              {isModelDownloaded(model.name) && (
+                                <Chip size="sm" color="success" variant="dot">
+                                  Downloaded
+                                </Chip>
+                              )}
+                            </span>
+                            <span className="models-page__select-size">
+                              {model.sizeMB}
+                            </span>
+                          </div>
+                        </SelectItem>
+                      );
+                    })}
                   </Select>
 
                   {selectedModelInfo && (
@@ -374,7 +327,7 @@ function ModelsPage() {
                         <div className="models-page__preview-row">
                           <span className="models-page__preview-label">Size:</span>
                           <span className="models-page__preview-value">
-                            {selectedModelInfo.size}
+                            {selectedModelInfo.sizeMB}
                           </span>
                         </div>
                         <div className="models-page__preview-row">
@@ -525,7 +478,7 @@ function ModelsPage() {
                           <span className="models-page__select-label">
                             {model.flag} {model.label}
                             {isVoskModelDownloaded(model.name) && (
-                              <Chip size="sm" color="success" variant="dot" style={{ marginLeft: '0.5rem' }}>
+                              <Chip size="sm" color="success" variant="dot" className="models-page__downloaded-chip">
                                 Downloaded
                               </Chip>
                             )}

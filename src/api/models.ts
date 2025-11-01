@@ -1,6 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
+import type { WhisperModelName } from "@constants/whisper-models";
 
-export type ModelName = "tiny" | "base" | "small" | "medium" | "large-v3-turbo";
+export type ModelName = WhisperModelName;
 
 export async function downloadModel(modelName: ModelName): Promise<string> {
   return invoke<string>("download_model", { modelName });
