@@ -39,7 +39,8 @@
       "Bash(powershell:*)",
       "Bash(set:*)",
       "Bash(./build_with_vulkan.bat)",
-      "Bash(git push)"
+      "Bash(git push)",
+      "Bash(rm:*)"
     ],
     "deny": [],
     "ask": []
