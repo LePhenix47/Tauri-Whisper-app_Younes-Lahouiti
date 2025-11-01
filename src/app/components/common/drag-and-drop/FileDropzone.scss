@@ -28,8 +28,10 @@
   }
 
   &--drag-active {
+    --_drag-active-bg: color-mix(in srgb, var(--color-blue-500) 10%, transparent);
+
     border-color: var(--color-blue-500);
-    background: var(--color-blue-50);
+    background: var(--_drag-active-bg);
     border-style: solid;
   }
 
@@ -68,14 +70,17 @@
 }
 
 .file-dropzone__error {
+  --_error-bg: color-mix(in srgb, var(--color-red-500) 8%, transparent);
+  --_error-border: color-mix(in srgb, var(--color-red-500) 30%, transparent);
+
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 12px 16px;
-  background: var(--color-red-50);
-  border: 1px solid var(--color-red-200);
+  background: var(--_error-bg);
+  border: 1px solid var(--_error-border);
   border-radius: 8px;
-  color: var(--color-red-700);
+  color: var(--color-red-500);
   font-size: 14px;
 }
 
@@ -167,14 +172,17 @@
 }
 
 .file-preview__error {
+  --_error-bg: color-mix(in srgb, var(--color-red-500) 8%, transparent);
+  --_error-border: color-mix(in srgb, var(--color-red-500) 30%, transparent);
+
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 12px 16px;
-  background: var(--color-red-50);
-  border: 1px solid var(--color-red-200);
+  background: var(--_error-bg);
+  border: 1px solid var(--_error-border);
   border-radius: 8px;
-  color: var(--color-red-700);
+  color: var(--color-red-500);
   font-size: 14px;
 }
 
