@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { Card, CardHeader, CardBody, Select, SelectItem, Chip } from "@heroui/react";
 import { useAppStore } from "@app/stores/useAppStore";
 import { getGpuInfo, type GpuInfo } from "@api/system";
+import "./index.scss";
 
 function SettingsPage() {
   const theme = useAppStore((state) => state.theme);
@@ -28,7 +29,7 @@ function SettingsPage() {
   }, []);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+    <div className="settings-page">
       <Card>
         <CardHeader>
           <h2>Settings</h2>
@@ -63,29 +64,29 @@ function SettingsPage() {
           )}
 
           {gpuInfo && !gpuError && (
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-              <div>
-                <strong>Vulkan Support:</strong>{" "}
+            <div className="settings-page__system-info">
+              <div className="settings-page__gpu-detail">
+                <strong>Vulkan Support:</strong>
                 <Chip color={gpuInfo.has_vulkan ? "success" : "warning"} size="sm">
                   {gpuInfo.has_vulkan ? "Available" : "Not Available"}
                 </Chip>
               </div>
 
               {gpuInfo.vulkan_version && (
-                <div>
-                  <strong>Vulkan SDK Path:</strong>{" "}
-                  <code style={{ fontSize: "0.875rem" }}>{gpuInfo.vulkan_version}</code>
+                <div className="settings-page__gpu-detail">
+                  <strong>Vulkan SDK Path:</strong>
+                  <code className="settings-page__code">{gpuInfo.vulkan_version}</code>
                 </div>
               )}
 
               {gpuInfo.gpu_name && (
-                <div>
+                <div className="settings-page__gpu-detail">
                   <strong>GPU:</strong> {gpuInfo.gpu_name}
                 </div>
               )}
 
               {gpuInfo.vendor && (
-                <div>
+                <div className="settings-page__gpu-detail">
                   <strong>Vendor:</strong> {gpuInfo.vendor}
                 </div>
               )}
