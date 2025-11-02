@@ -3,16 +3,16 @@ name: CI/CD Pipeline
 on:
   push:
     branches: [master]
+    tags:
+      - 'v*.*.*'  # Triggers release on version tags like v0.1.0, v1.2.3
   pull_request:
     branches: [master]
-  # Uncomment to enable manual releases
-  # release:
-  #   types: [created]
 
 jobs:
-  # Step 1: Run Rust tests
+  # Step 1: Run Rust tests (only on push/PR, not on tags)
   test-rust:
     name: Run Rust Tests
+    if: github.ref_type != 'tag'
     runs-on: windows-latest
     steps:
       - name: Checkout code
@@ -110,83 +110,6 @@ jobs:
           Write-Host "✓ Created CMake toolchain file at $toolchainPath"
           Get-Content $toolchainPath
 
-      - name: Investigate Vulkan SDK directory
-        run: |
-          Write-Host "=== Vulkan SDK Directory Structure ==="
-          Write-Host "VULKAN_SDK path: $env:VULKAN_SDK"
-
-          if (Test-Path "$env:VULKAN_SDK") {
-            Write-Host "`nTop-level directories:"
-            Get-ChildItem "$env:VULKAN_SDK" -Directory | Select-Object Name
-
-            Write-Host "`nAll DLL files in Vulkan SDK:"
-            Get-ChildItem "$env:VULKAN_SDK" -Recurse -Filter "*.dll" -ErrorAction SilentlyContinue | Select-Object FullName, Length
-          } else {
-            Write-Host "ERROR: VULKAN_SDK directory does not exist!"
-          }
-
-          Write-Host "`n=== Searching for vulkan-1.dll ==="
-          $searchPaths = @(
-            "$env:VULKAN_SDK\Bin\vulkan-1.dll",
-            "$env:VULKAN_SDK\bin\vulkan-1.dll",
-            "$env:VULKAN_SDK\Lib\vulkan-1.dll",
-            "$env:VULKAN_SDK\Runtime\x64\vulkan-1.dll",
-            "C:\Windows\System32\vulkan-1.dll",
-            "C:\Windows\SysWOW64\vulkan-1.dll"
-          )
-          $found = $false
-          foreach ($path in $searchPaths) {
-            if (Test-Path $path) {
-              Write-Host "✓ FOUND at: $path"
-              Get-Item $path | Select-Object Name, Length, LastWriteTime
-              $found = $true
-            } else {
-              Write-Host "✗ Not at: $path"
-            }
-          }
-
-          if (-not $found) {
-            Write-Host "`nWARNING: vulkan-1.dll not found in any expected location"
-            Write-Host "Build succeeded but runtime may fail without Vulkan DLL"
-          }
-
-      - name: Analyze test executable dependencies
-        run: |
-          cd W:\src-tauri
-
-          # Find the test executable
-          $testExe = Get-ChildItem -Path "target\debug\deps" -Filter "tauri_whisper_app-*.exe" | Select-Object -First 1
-
-          if ($testExe) {
-            Write-Host "Analyzing dependencies for: $($testExe.FullName)"
-
-            # Use dumpbin to show DLL dependencies
-            dumpbin /dependents $testExe.FullName
-
-            Write-Host "`nChecking if each dependency exists in PATH:"
-            $allFound = $true
-
-            # Check critical DLLs
-            $criticalDlls = @("libvosk.dll", "vulkan-1.dll", "msvcp140.dll", "vcruntime140.dll")
-            foreach ($dll in $criticalDlls) {
-              $found = $false
-              foreach ($path in $env:PATH -split ';') {
-                $fullPath = Join-Path $path $dll
-                if (Test-Path $fullPath) {
-                  Write-Host "✓ $dll found at: $fullPath"
-                  $found = $true
-                  break
-                }
-              }
-              if (-not $found) {
-                Write-Host "✗ $dll NOT FOUND in PATH"
-                $allFound = $false
-              }
-            }
-          } else {
-            Write-Host "ERROR: Test executable not found"
-          }
-
       - name: Run Rust tests
         run: |
           # Ensure Vulkan runtime DLL is in PATH for this step
@@ -194,93 +117,6 @@ jobs:
           Write-Host "✓ Added Vulkan Runtime and Bin to PATH for test execution"
 
           cd W:\src-tauri
-
-          Write-Host "`n=== PRE-TEST DLL DIAGNOSTICS ==="
-          # Find the test executable
-          $testExe = Get-ChildItem -Path "target\debug\deps" -Filter "tauri_whisper_app-*.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
-          if ($testExe) {
-            Write-Host "Test executable: $($testExe.FullName)"
-            Write-Host "Executable architecture:"
-            dumpbin /headers $testExe.FullName | Select-String "machine"
-
-            Write-Host "`nALL DLL dependencies of test executable:"
-            dumpbin /dependents $testExe.FullName | Select-String "\.dll"
-
-            # Check critical DLLs
-            Write-Host "`nChecking critical DLLs in PATH:"
-            $criticalDlls = @("libvosk.dll", "vulkan-1.dll", "msvcp140.dll", "vcruntime140.dll")
-            foreach ($dll in $criticalDlls) {
-              $found = $false
-              foreach ($pathEntry in $env:PATH -split ';') {
-                if ($pathEntry) {
-                  $fullPath = Join-Path $pathEntry $dll
-                  if (Test-Path $fullPath) {
-                    Write-Host "`n  ✓ $dll → $fullPath"
-
-                    # Check architecture of each DLL
-                    $archInfo = dumpbin /headers $fullPath | Select-String "machine"
-                    Write-Host "    Architecture: $archInfo"
-
-                    # For libvosk.dll, also check exports
-                    if ($dll -eq "libvosk.dll") {
-                      Write-Host "    Checking critical exports:"
-                      $exports = dumpbin /exports $fullPath | Select-String "vosk_"
-
-                      # Check for standard API functions
-                      $hasModelNew = $exports | Select-String "vosk_model_new"
-                      $hasRecognizerNew = $exports | Select-String "vosk_recognizer_new"
-
-                      if ($hasModelNew -and $hasRecognizerNew) {
-                        Write-Host "      ✓ Standard API present (vosk_model_new, vosk_recognizer_new found)"
-                      } else {
-                        Write-Host "      ✗ MISSING standard API"
-                        if (-not $hasModelNew) { Write-Host "        Missing: vosk_model_new" }
-                        if (-not $hasRecognizerNew) { Write-Host "        Missing: vosk_recognizer_new" }
-                      }
-
-                      Write-Host "    Total exports matching 'vosk_': $(($exports | Measure-Object).Count)"
-                      Write-Host "    First 20 exports:"
-                      $exports | Select-Object -First 20
-
-                      # Check libvosk.dll dependencies
-                      Write-Host "`n    Checking libvosk.dll dependencies:"
-                      $dumpbinOutput = dumpbin /dependents $fullPath
-                      $dependencies = $dumpbinOutput | Select-String "\.dll" | ForEach-Object { $_.Line.Trim() }
-
-                      foreach ($dep in $dependencies) {
-                        if ($dep -match "(\S+\.dll)") {
-                          $depName = $matches[1]
-                          $depFound = $false
-
-                          foreach ($pathEntry in $env:PATH -split ';') {
-                            if ($pathEntry) {
-                              $depPath = Join-Path $pathEntry $depName
-                              if (Test-Path $depPath) {
-                                Write-Host "      ✓ $depName → $depPath"
-                                $depFound = $true
-                                break
-                              }
-                            }
-                          }
-
-                          if (-not $depFound) {
-                            Write-Host "      ✗ $depName MISSING IN PATH"
-                          }
-                        }
-                      }
-                    }
-
-                    $found = $true
-                    break
-                  }
-                }
-              }
-              if (-not $found) {
-                Write-Host "  ✗ $dll NOT FOUND"
-              }
-            }
-          }
-          Write-Host "`n=== END DIAGNOSTICS ===`n"
 
           $env:RUST_BACKTRACE = "1"
           $env:RUST_LOG = "debug"
@@ -303,11 +139,23 @@ jobs:
           subst W: /D
           Write-Host "✓ Removed virtual drive W:\"
 
-  # Step 2: Build the app
+  # Step 2: Cross-platform builds (runs on tags OR after tests pass)
   build:
-    name: Build Tauri App (Windows)
-    needs: test-rust
-    runs-on: windows-latest
+    name: Build (${{ matrix.platform.os }})
+    needs: [test-rust]
+    if: always() && (github.ref_type == 'tag' || (needs.test-rust.result == 'success' || needs.test-rust.result == 'skipped'))
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - os: windows-latest
+            rust_target: x86_64-pc-windows-msvc
+          - os: ubuntu-latest
+            rust_target: x86_64-unknown-linux-gnu
+          - os: macos-latest
+            rust_target: x86_64-apple-darwin
+
+    runs-on: ${{ matrix.platform.os }}
 
     steps:
       - name: Checkout code
@@ -320,8 +168,12 @@ jobs:
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.platform.rust_target }}
 
-      - name: Install Vulkan SDK
+      # Windows-specific setup
+      - name: Install Vulkan SDK (Windows)
+        if: matrix.platform.os == 'windows-latest'
         uses: jakoch/install-vulkan-sdk-action@v1
         with:
           vulkan_version: 1.3.290.0
@@ -329,6 +181,45 @@ jobs:
           cache: true
           stripdown: false
 
+      - name: Verify Vulkan and add to PATH (Windows)
+        if: matrix.platform.os == 'windows-latest'
+        run: |
+          if (Test-Path $env:VULKAN_SDK) {
+            Write-Host "✓ VULKAN_SDK: $env:VULKAN_SDK"
+            $vulkanRuntime = "$env:VULKAN_SDK\Runtime\x64"
+            if (Test-Path $vulkanRuntime) {
+              echo "$vulkanRuntime" | Out-File -Append -Encoding utf8 $env:GITHUB_PATH
+            }
+            $vulkanBin = "$env:VULKAN_SDK\Bin"
+            if (Test-Path $vulkanBin) {
+              echo "$vulkanBin" | Out-File -Append -Encoding utf8 $env:GITHUB_PATH
+            }
+          }
+
+      # Linux-specific setup
+      - name: Install dependencies (Linux)
+        if: matrix.platform.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            build-essential \
+            curl \
+            wget \
+            file \
+            libssl-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            libvulkan-dev \
+            vulkan-tools
+
+      # macOS-specific setup
+      - name: Install dependencies (macOS)
+        if: matrix.platform.os == 'macos-latest'
+        run: |
+          brew install vulkan-loader
+
+      # Cache Rust dependencies
       - name: Cache Rust dependencies
         uses: actions/cache@v4
         with:
@@ -340,36 +231,59 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-
 
+      # Install frontend dependencies
       - name: Install frontend dependencies
         run: bun install
 
+      # Build the app
       - name: Build Tauri app
         run: bun run tauri:build
 
-      - name: Upload artifacts
+      # Upload build artifacts (always, for both tag and non-tag builds)
+      - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: tauri-app-windows
-          path: |
-            src-tauri/target/release/bundle/
+          name: tauri-app-${{ matrix.platform.os }}
+          path: src-tauri/target/release/bundle/
           retention-days: 7
 
-  # Step 3: Create release (COMMENTED - uncomment when ready)
+  # Step 3: Create GitHub Release (only on tags, after all builds complete)
   release:
-    name: Create Release
-    needs: build
+    name: Create GitHub Release
+    needs: [build]
+    if: github.ref_type == 'tag'
     runs-on: ubuntu-latest
-    if: github.event_name == 'release'
+    permissions:
+      contents: write
     steps:
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Create GitHub Release
+      - name: Get version from tag
+        id: get_version
+        run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Display downloaded artifacts
+        run: |
+          echo "Downloaded artifacts:"
+          ls -R artifacts/
+
+      - name: Create Release with artifacts
         uses: softprops/action-gh-release@v1
         with:
+          tag_name: ${{ github.ref }}
+          name: Release ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
           files: |
-            tauri-app-windows-latest/**/*
-            tauri-app-ubuntu-latest/**/*
-            tauri-app-macos-latest/**/*
+            artifacts/tauri-app-windows-latest/**/*
+            artifacts/tauri-app-ubuntu-latest/**/*
+            artifacts/tauri-app-macos-latest/**/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
