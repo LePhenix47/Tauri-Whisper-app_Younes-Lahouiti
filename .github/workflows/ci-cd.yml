@@ -238,8 +238,7 @@ jobs:
             libayatana-appindicator3-dev \
             librsvg2-dev \
             libvulkan-dev \
-            vulkan-tools \
-            glslc
+            vulkan-tools
 
       - name: Install Vulkan SDK (Linux)
         if: matrix.platform.os == 'ubuntu-latest'
@@ -247,14 +246,14 @@ jobs:
           wget -qO - https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc
           sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-noble.list https://packages.lunarg.com/vulkan/lunarg-vulkan-noble.list
           sudo apt-get update
-          sudo apt-get install -y vulkan-sdk --no-install-recommends || sudo apt-get install -y vulkan-headers vulkan-validationlayers-dev spirv-tools glslang-tools
+          sudo apt-get install -y vulkan-sdk --no-install-recommends || sudo apt-get install -y vulkan-headers libvulkan-dev spirv-tools glslang-tools shaderc
           echo "VULKAN_SDK=/usr" >> $GITHUB_ENV
 
       # macOS-specific setup
       - name: Install dependencies (macOS)
         if: matrix.platform.os == 'macos-latest'
         run: |
-          brew install vulkan-loader vulkan-headers
+          brew install vulkan-loader vulkan-headers shaderc
 
       - name: Install Vulkan SDK (macOS)
         if: matrix.platform.os == 'macos-latest'
@@ -284,8 +283,9 @@ jobs:
       # Build the app
       - name: Build Tauri app (Windows)
         if: matrix.platform.os == 'windows-latest'
-        working-directory: W:\
-        run: bun run tauri:build
+        run: |
+          cd W:\
+          bun run tauri:build
 
       - name: Build Tauri app (Linux/macOS)
         if: matrix.platform.os != 'windows-latest'
