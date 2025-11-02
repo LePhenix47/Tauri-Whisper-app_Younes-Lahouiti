@@ -26,7 +26,7 @@ export default defineConfig(({ mode }) => ({
     },
   },
   build: {
-    target: ["es2021", "chrome100", "safari13"],
+    target: ["es2022", "chrome105", "safari14"],
     minify: mode !== "development" ? "esbuild" : false,
     sourcemap: mode === "development",
   },

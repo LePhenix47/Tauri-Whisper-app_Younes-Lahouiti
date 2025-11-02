@@ -11,6 +11,9 @@
     "resources": [
       "lib/libvosk.dll",
       "vulkan-1.dll"
+    ],
+    "icon": [
+      "icons/icon.ico"
     ]
   },
   "productName": "Tauri Whisper App",

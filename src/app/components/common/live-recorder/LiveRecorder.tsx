@@ -154,10 +154,6 @@ export default function LiveRecorder() {
       playbackWavesurferRef.current.destroy();
     }
 
-    // Get CSS variable colors from document
-    const getCSSVar = (varName: string) =>
-      getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
-
     // Create new WaveSurfer instance for playback
     const playbackWavesurfer = WaveSurfer.create({
       container: playbackWaveformRef.current,
