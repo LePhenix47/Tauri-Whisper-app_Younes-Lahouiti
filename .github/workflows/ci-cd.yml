@@ -263,6 +263,9 @@ jobs:
           VULKAN_DIR=$(find . -maxdepth 1 -type d -name "vulkansdk-macos-*" | head -n 1)
           echo "VULKAN_SDK=$PWD/$VULKAN_DIR/macOS" >> $GITHUB_ENV
           echo "$PWD/$VULKAN_DIR/macOS/bin" >> $GITHUB_PATH
+          echo "GGML_NO_ACCELERATE=1" >> $GITHUB_ENV
+          echo "WHISPER_NO_AVX=1" >> $GITHUB_ENV
+          echo "WHISPER_NO_AVX2=1" >> $GITHUB_ENV
 
       # Cache Rust dependencies
       - name: Cache Rust dependencies
@@ -284,7 +287,11 @@ jobs:
       - name: Build Tauri app (Windows)
         if: matrix.platform.os == 'windows-latest'
         run: |
+          Write-Host "Current directory: $PWD"
+          Write-Host "W: drive contents:"
+          Get-ChildItem W:\ | Select-Object Name
           cd W:\
+          Write-Host "Changed to: $PWD"
           bun run tauri:build
 
       - name: Build Tauri app (Linux/macOS)
