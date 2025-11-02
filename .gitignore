@@ -15,6 +15,9 @@ node_modules/
 # Bun
 .bun
 
+# Debugging
+target/
+
 # Testing
 coverage
 
