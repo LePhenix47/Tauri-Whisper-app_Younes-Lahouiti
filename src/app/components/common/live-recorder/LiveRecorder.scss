@@ -39,8 +39,8 @@
     align-items: center;
     justify-content: center;
     width: 100%;
-    background-color: var(--bg-primary, #ffffff);
-    border: 2px solid var(--border-color, #e0e0e0);
+    background-color: var(--bg-primary);
+    border: 2px solid var(--border-color);
     border-radius: 12px;
     overflow: hidden;
     min-height: 200px;
@@ -48,7 +48,7 @@
 
     &:has(.live-recorder__waveform--active) {
       border-color: var(--color-blue-500);
-      box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-blue-500) 10%, transparent);
+      box-shadow: 0 0 0 4px var(--color-blue-100);
     }
   }
 
@@ -67,7 +67,7 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    color: var(--color-secondary, #666);
+    color: var(--color-secondary);
     font-size: 16px;
     text-align: center;
     pointer-events: none;
@@ -84,7 +84,7 @@
     @include center-flex-column(24px);
     width: 100%;
     padding: 32px;
-    background-color: var(--bg-secondary, #f8f9fa);
+    background-color: var(--bg-secondary);
     border-radius: 12px;
   }
 
@@ -97,8 +97,8 @@
 
   &__playback-waveform-wrapper {
     width: 100%;
-    background-color: var(--bg-primary, #ffffff);
-    border: 2px solid var(--border-color, #e0e0e0);
+    background-color: var(--bg-primary);
+    border: 2px solid var(--border-color);
     border-radius: 8px;
     overflow: hidden;
     padding: 8px;
@@ -119,8 +119,8 @@
     width: 100%;
     margin-top: 32px;
     padding: 24px;
-    background-color: var(--bg-secondary, #f8f9fa);
-    border: 1px solid var(--border-color, #e0e0e0);
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
     border-radius: 12px;
   }
 
@@ -145,7 +145,7 @@
   &__transcription-partial {
     p {
       margin: 0;
-      color: var(--color-secondary, #666);
+      color: var(--color-secondary);
       line-height: 1.6;
       font-size: 16px;
       font-style: italic;
@@ -171,42 +171,6 @@
   }
   50%, 100% {
     opacity: 0;
-  }
-}
-
-/**
- * Dark theme support
- */
-@media (prefers-color-scheme: dark) {
-  .live-recorder {
-    &__waveform-wrapper {
-      background-color: var(--bg-primary, #1a1a1a);
-      border-color: var(--border-color, #444);
-    }
-
-    &__placeholder {
-      color: var(--color-secondary, #aaa);
-    }
-
-    &__playback {
-      background-color: var(--bg-secondary, #2d2d2d);
-    }
-
-    &__playback-waveform-wrapper {
-      background-color: var(--bg-primary, #1a1a1a);
-      border-color: var(--border-color, #444);
-    }
-
-    &__transcription {
-      background-color: var(--bg-secondary, #2d2d2d);
-      border-color: var(--border-color, #444);
-    }
-
-    &__transcription-partial {
-      p {
-        color: var(--color-secondary, #aaa);
-      }
-    }
   }
 }
 
