@@ -88,17 +88,18 @@ jobs:
         with:
           arch: x64
 
-      - name: Create virtual drive to shorten paths
+      - name: Setup short build path
         run: |
-          # Map the workspace to a short drive letter to avoid Windows path length limits
-          subst W: "$env:GITHUB_WORKSPACE"
-          Write-Host "✓ Mapped $env:GITHUB_WORKSPACE to W:\"
-          Get-PSDrive W
+          # Use a short path for Cargo target directory to avoid Windows path length limits
+          $shortPath = "C:\t"
+          New-Item -ItemType Directory -Force -Path $shortPath | Out-Null
+          echo "CARGO_TARGET_DIR=$shortPath" | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
+          Write-Host "✓ Set CARGO_TARGET_DIR to $shortPath"
 
       - name: Create CMake toolchain file for nested builds
         run: |
           $clPath = (Get-Command cl.exe).Source -replace '\\', '/'
-          $toolchainPath = "W:\windows-toolchain.cmake"
+          $toolchainPath = "$env:GITHUB_WORKSPACE\windows-toolchain.cmake"
 
           @"
           set(CMAKE_C_COMPILER "$clPath" CACHE FILEPATH "C compiler" FORCE)
@@ -116,13 +117,13 @@ jobs:
           $env:PATH = "$env:VULKAN_SDK\Runtime\x64;$env:VULKAN_SDK\Bin;$env:PATH"
           Write-Host "✓ Added Vulkan Runtime and Bin to PATH for test execution"
 
-          cd W:\src-tauri
+          cd src-tauri
 
           $env:RUST_BACKTRACE = "1"
           $env:RUST_LOG = "debug"
 
           Write-Host "`n=== RUNNING TESTS (integration tests only, no binary init) ==="
-          cargo test --test test_commands --verbose 2>&1 | Tee-Object -FilePath "W:\build.log"
+          cargo test --test test_commands --verbose 2>&1 | Tee-Object -FilePath "$env:GITHUB_WORKSPACE\build.log"
         continue-on-error: true
 
       - name: Upload build log on failure
@@ -130,14 +131,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: build-log
-          path: W:\build.log
+          path: build.log
           retention-days: 1
-
-      - name: Cleanup virtual drive
-        if: always()
-        run: |
-          subst W: /D
-          Write-Host "✓ Removed virtual drive W:\"
 
   # Step 2: Cross-platform builds (runs on tags OR after tests pass)
   build:
@@ -202,17 +197,20 @@ jobs:
             }
           }
 
-      - name: Create virtual drive (Windows)
+      - name: Setup short build path (Windows)
         if: matrix.platform.os == 'windows-latest'
         run: |
-          subst W: "$env:GITHUB_WORKSPACE"
-          Write-Host "✓ Mapped workspace to W:\"
+          # Use a short path for Cargo target directory to avoid Windows path length limits
+          $shortPath = "C:\t"
+          New-Item -ItemType Directory -Force -Path $shortPath | Out-Null
+          echo "CARGO_TARGET_DIR=$shortPath" | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
+          Write-Host "✓ Set CARGO_TARGET_DIR to $shortPath"
 
       - name: Create CMake toolchain file (Windows)
         if: matrix.platform.os == 'windows-latest'
         run: |
           $clPath = (Get-Command cl.exe).Source -replace '\\', '/'
-          $toolchainPath = "W:\windows-toolchain.cmake"
+          $toolchainPath = "$env:GITHUB_WORKSPACE\windows-toolchain.cmake"
 
           @"
           set(CMAKE_C_COMPILER "$clPath" CACHE FILEPATH "C compiler" FORCE)
@@ -221,7 +219,7 @@ jobs:
           "@ | Out-File -FilePath $toolchainPath -Encoding utf8
 
           echo "CMAKE_TOOLCHAIN_FILE=$toolchainPath" | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
-          Write-Host "✓ Created CMake toolchain file"
+          Write-Host "✓ Created CMake toolchain file at $toolchainPath"
 
       # Linux-specific setup
       - name: Install dependencies (Linux)
@@ -284,23 +282,20 @@ jobs:
         run: bun install
 
       # Build the app
-      - name: Build Tauri app (Windows)
-        if: matrix.platform.os == 'windows-latest'
-        run: bun run --cwd W:\ tauri:build
-
-      - name: Build Tauri app (Linux/macOS)
-        if: matrix.platform.os != 'windows-latest'
+      - name: Build Tauri app
         run: bun run tauri:build
 
-      # Cleanup virtual drive (Windows)
-      - name: Cleanup virtual drive (Windows)
-        if: always() && matrix.platform.os == 'windows-latest'
-        run: |
-          subst W: /D
-          Write-Host "✓ Removed virtual drive"
-
       # Upload build artifacts (always, for both tag and non-tag builds)
-      - name: Upload build artifacts
+      - name: Upload build artifacts (Windows)
+        if: matrix.platform.os == 'windows-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: tauri-app-${{ matrix.platform.os }}
+          path: C:\t\release\bundle\
+          retention-days: 7
+
+      - name: Upload build artifacts (Linux/macOS)
+        if: matrix.platform.os != 'windows-latest'
         uses: actions/upload-artifact@v4
         with:
           name: tauri-app-${{ matrix.platform.os }}
