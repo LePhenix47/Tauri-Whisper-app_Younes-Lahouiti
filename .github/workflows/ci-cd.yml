@@ -285,6 +285,22 @@ jobs:
       - name: Build Tauri app
         run: bun run tauri:build
 
+      # Copy DLL to bundle (Windows only)
+      - name: Copy libvosk.dll to bundle (Windows)
+        if: matrix.platform.os == 'windows-latest'
+        run: |
+          $bundlePath = "C:\t\release\bundle"
+          $dllSource = "src-tauri\lib\libvosk.dll"
+
+          Write-Host "Copying libvosk.dll to all bundle locations..."
+
+          # Find all .exe files in bundle and copy DLL next to them
+          Get-ChildItem -Path $bundlePath -Recurse -Filter "*.exe" | ForEach-Object {
+            $exeDir = $_.DirectoryName
+            Copy-Item -Path $dllSource -Destination $exeDir -Force
+            Write-Host "Copied to: $exeDir"
+          }
+
       # Verify DLL was bundled (Windows only)
       - name: Verify libvosk.dll in bundle (Windows)
         if: matrix.platform.os == 'windows-latest'
