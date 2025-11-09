@@ -286,7 +286,7 @@ jobs:
       # Build the app
       - name: Build Tauri app (Windows)
         if: matrix.platform.os == 'windows-latest'
-        run: bun --cwd W:\ run tauri:build
+        run: bun run --cwd W:\ tauri:build
 
       - name: Build Tauri app (Linux/macOS)
         if: matrix.platform.os != 'windows-latest'
