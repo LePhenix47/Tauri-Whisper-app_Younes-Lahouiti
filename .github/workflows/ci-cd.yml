@@ -286,13 +286,7 @@ jobs:
       # Build the app
       - name: Build Tauri app (Windows)
         if: matrix.platform.os == 'windows-latest'
-        run: |
-          Write-Host "Current directory: $PWD"
-          Write-Host "W: drive contents:"
-          Get-ChildItem W:\ | Select-Object Name
-          cd W:\
-          Write-Host "Changed to: $PWD"
-          bun run tauri:build
+        run: bun --cwd W:\ run tauri:build
 
       - name: Build Tauri app (Linux/macOS)
         if: matrix.platform.os != 'windows-latest'
