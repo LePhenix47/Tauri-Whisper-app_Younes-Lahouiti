@@ -39,13 +39,13 @@ jobs:
         run: dir "C:\Windows\System32\msvcp*.dll"
 
       - name: Add libvosk.dll to PATH
-        run: echo "$env:GITHUB_WORKSPACE\src-tauri\lib" | Out-File -Append -Encoding utf8 $env:GITHUB_PATH
+        run: echo "$env:GITHUB_WORKSPACE\src-tauri" | Out-File -Append -Encoding utf8 $env:GITHUB_PATH
 
       - name: Verify libvosk.dll exists
         run: |
-          if (Test-Path "src-tauri\lib\libvosk.dll") {
+          if (Test-Path "src-tauri\libvosk.dll") {
             Write-Host "✓ libvosk.dll found"
-            Get-Item "src-tauri\lib\libvosk.dll" | Select-Object Name, Length
+            Get-Item "src-tauri\libvosk.dll" | Select-Object Name, Length
           } else {
             Write-Error "✗ libvosk.dll NOT found"
             exit 1
