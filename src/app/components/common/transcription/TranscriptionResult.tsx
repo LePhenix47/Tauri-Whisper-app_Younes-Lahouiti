@@ -98,9 +98,19 @@ export function TranscriptionResult({
       )}
 
       <div className="transcription-result__content">
-        <h3 className="transcription-result__section-title">Transcription</h3>
+        <label
+          className="transcription-result__section-title"
+          htmlFor="transcription-result"
+        >
+          Transcription
+        </label>
         <div className="transcription-result__text-box">
-          <p className="transcription-result__text">{text}</p>
+          <textarea
+            className="transcription-result__text"
+            value={text}
+            id="transcription-result"
+            readOnly
+          ></textarea>
         </div>
       </div>
 
