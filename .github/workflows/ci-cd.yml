@@ -285,6 +285,19 @@ jobs:
       - name: Build Tauri app
         run: bun run tauri:build
 
+      # Verify DLL was bundled (Windows only)
+      - name: Verify libvosk.dll in bundle (Windows)
+        if: matrix.platform.os == 'windows-latest'
+        run: |
+          $bundlePath = "C:\t\release\bundle"
+          Write-Host "Searching for libvosk.dll in bundle..."
+          Get-ChildItem -Path $bundlePath -Recurse -Filter "libvosk.dll" -ErrorAction SilentlyContinue | ForEach-Object {
+            Write-Host "Found: $($_.FullName)"
+          }
+          if (-not (Get-ChildItem -Path $bundlePath -Recurse -Filter "libvosk.dll" -ErrorAction SilentlyContinue)) {
+            Write-Warning "libvosk.dll not found in bundle!"
+          }
+
       # Upload build artifacts (always, for both tag and non-tag builds)
       - name: Upload build artifacts (Windows)
         if: matrix.platform.os == 'windows-latest'

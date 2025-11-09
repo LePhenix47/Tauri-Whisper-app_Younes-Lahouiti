@@ -12,7 +12,14 @@ fn main() {
 
     // Copy libvosk.dll to target directory for dev/debug builds
     let profile = env::var("PROFILE").unwrap_or_else(|_| "debug".to_string());
-    let target_dir = PathBuf::from(&manifest_dir).join("target").join(&profile);
+
+    // Handle custom CARGO_TARGET_DIR (e.g., C:\t in CI/CD)
+    let target_dir = if let Ok(custom_target) = env::var("CARGO_TARGET_DIR") {
+        PathBuf::from(custom_target).join(&profile)
+    } else {
+        PathBuf::from(&manifest_dir).join("target").join(&profile)
+    };
+
     let dll_source = lib_dir.join("libvosk.dll");
     let dll_dest = target_dir.join("libvosk.dll");
 
