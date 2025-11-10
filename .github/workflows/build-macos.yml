@@ -1,0 +1,68 @@
+name: Build macOS
+
+on:
+  workflow_call:
+    inputs:
+      upload_artifacts:
+        description: 'Whether to upload build artifacts'
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+  build-macos:
+    name: Build macOS
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-apple-darwin
+
+      - name: Install system dependencies
+        run: |
+          brew install vulkan-loader vulkan-headers shaderc
+
+      - name: Install Vulkan SDK
+        run: |
+          curl -L https://sdk.lunarg.com/sdk/download/latest/mac/vulkan-sdk.tar.gz -o vulkan-sdk.tar.gz
+          tar -xzf vulkan-sdk.tar.gz
+          VULKAN_DIR=$(find . -maxdepth 1 -type d -name "vulkansdk-macos-*" | head -n 1)
+          echo "VULKAN_SDK=$PWD/$VULKAN_DIR/macOS" >> $GITHUB_ENV
+          echo "$PWD/$VULKAN_DIR/macOS/bin" >> $GITHUB_PATH
+          echo "GGML_NO_ACCELERATE=1" >> $GITHUB_ENV
+          echo "WHISPER_NO_AVX=1" >> $GITHUB_ENV
+          echo "WHISPER_NO_AVX2=1" >> $GITHUB_ENV
+
+      - name: Cache Rust dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            src-tauri/target
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ runner.os }}-cargo-${{ hashFiles('src-tauri/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Install frontend dependencies
+        run: bun install
+
+      - name: Build Tauri app
+        run: bun run tauri:build
+
+      - name: Upload build artifacts
+        if: inputs.upload_artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: tauri-app-macos-latest
+          path: src-tauri/target/release/bundle/
+          retention-days: 7

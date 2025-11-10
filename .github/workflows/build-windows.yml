@@ -1,0 +1,101 @@
+name: Build Windows
+
+on:
+  workflow_call:
+    inputs:
+      upload_artifacts:
+        description: 'Whether to upload build artifacts'
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+  build-windows:
+    name: Build Windows
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - name: Setup MSVC Developer Command Prompt
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Install Vulkan SDK
+        uses: jakoch/install-vulkan-sdk-action@v1
+        with:
+          vulkan_version: 1.3.290.0
+          install_runtime: true
+          cache: true
+          stripdown: false
+
+      - name: Verify Vulkan SDK and add to PATH
+        run: |
+          if (Test-Path $env:VULKAN_SDK) {
+            Write-Host "✓ VULKAN_SDK: $env:VULKAN_SDK"
+            $vulkanRuntime = "$env:VULKAN_SDK\Runtime\x64"
+            if (Test-Path $vulkanRuntime) {
+              echo "$vulkanRuntime" | Out-File -Append -Encoding utf8 $env:GITHUB_PATH
+            }
+            $vulkanBin = "$env:VULKAN_SDK\Bin"
+            if (Test-Path $vulkanBin) {
+              echo "$vulkanBin" | Out-File -Append -Encoding utf8 $env:GITHUB_PATH
+            }
+          }
+
+      - name: Setup short build path
+        run: |
+          $shortPath = "C:\t"
+          New-Item -ItemType Directory -Force -Path $shortPath | Out-Null
+          echo "CARGO_TARGET_DIR=$shortPath" | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
+          Write-Host "✓ Set CARGO_TARGET_DIR to $shortPath"
+
+      - name: Create CMake toolchain file
+        run: |
+          $clPath = (Get-Command cl.exe).Source -replace '\\', '/'
+          $toolchainPath = "$env:GITHUB_WORKSPACE\windows-toolchain.cmake"
+
+          @"
+          set(CMAKE_C_COMPILER "$clPath" CACHE FILEPATH "C compiler" FORCE)
+          set(CMAKE_CXX_COMPILER "$clPath" CACHE FILEPATH "C++ compiler" FORCE)
+          set(CMAKE_SYSTEM_NAME Windows)
+          "@ | Out-File -FilePath $toolchainPath -Encoding utf8
+
+          echo "CMAKE_TOOLCHAIN_FILE=$toolchainPath" | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
+          Write-Host "✓ Created CMake toolchain file at $toolchainPath"
+
+      - name: Cache Rust dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            C:\t
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ runner.os }}-cargo-${{ hashFiles('src-tauri/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Install frontend dependencies
+        run: bun install
+
+      - name: Build Tauri app
+        run: bun run tauri:build
+
+      - name: Upload build artifacts
+        if: inputs.upload_artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: tauri-app-windows-latest
+          path: C:\t\release\bundle\
+          retention-days: 7
