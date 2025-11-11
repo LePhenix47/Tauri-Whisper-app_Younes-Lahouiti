@@ -25,7 +25,7 @@ jobs:
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: x86_64-apple-darwin
+          targets: aarch64-apple-darwin
 
       - name: Install system dependencies
         run: |
@@ -39,8 +39,7 @@ jobs:
           echo "VULKAN_SDK=$PWD/$VULKAN_DIR/macOS" >> $GITHUB_ENV
           echo "$PWD/$VULKAN_DIR/macOS/bin" >> $GITHUB_PATH
           echo "GGML_NO_ACCELERATE=1" >> $GITHUB_ENV
-          echo "WHISPER_NO_AVX=1" >> $GITHUB_ENV
-          echo "WHISPER_NO_AVX2=1" >> $GITHUB_ENV
+          echo "GGML_NO_I8MM=1" >> $GITHUB_ENV
 
       - name: Cache Rust dependencies
         uses: actions/cache@v4
