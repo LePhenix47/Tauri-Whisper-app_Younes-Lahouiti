@@ -76,6 +76,8 @@ jobs:
 
       - name: Build Tauri app
         run: bun run tauri:build
+        env:
+          RUSTFLAGS: "-L ${{ github.workspace }}/src-tauri"
 
       - name: Upload build artifacts
         if: inputs.upload_artifacts
