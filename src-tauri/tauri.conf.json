@@ -16,7 +16,8 @@
       "libstdc++-6.dll"
     ],
     "icon": [
-      "icons/icon.ico"
+      "icons/icon.ico",
+      "icons/icon.png"
     ]
   },
   "productName": "Tauri Whisper App",
