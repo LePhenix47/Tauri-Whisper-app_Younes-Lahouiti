@@ -6,6 +6,7 @@ import { MdMic, MdStop, MdWarning, MdPlayArrow, MdDelete } from 'react-icons/md'
 import { useListVoskModels } from '@app/hooks/useModels';
 import { useVoskLiveTranscription } from '@app/hooks/useVoskLiveTranscription';
 import { getRootCssVariable } from '@utils/css';
+import { isVoskSupported } from '@app/utils/platform';
 import './LiveRecorder.scss';
 
 /**
@@ -50,6 +51,8 @@ export default function LiveRecorder() {
   const [isInitialized, setIsInitialized] = useState(false);
   const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [voskSupportChecked, setVoskSupportChecked] = useState(false);
+  const [voskSupported, setVoskSupported] = useState(false);
 
   // Vosk transcription state
   const [selectedModel, setSelectedModel] = useState("vosk-model-small-en-us-0.15");
@@ -74,6 +77,14 @@ export default function LiveRecorder() {
     onFinalResult: (text) => console.log("[Vosk] Final:", text),
     onError: (err) => console.error("[Vosk] Error:", err),
   });
+
+  /**
+   * Check platform support on mount
+   */
+  useEffect(() => {
+    setVoskSupported(isVoskSupported());
+    setVoskSupportChecked(true);
+  }, []);
 
   /**
    * Initialize WaveSurfer and RecordPlugin on component mount
@@ -336,6 +347,18 @@ export default function LiveRecorder() {
     <div className="live-recorder">
       <h2 className="live-recorder__title">Live Speech Recorder</h2>
 
+      {/* Platform unsupported warning */}
+      {voskSupportChecked && !voskSupported && (
+        <Chip
+          color="warning"
+          variant="flat"
+          startContent={<MdWarning size={18} />}
+          className="live-recorder__platform-warning"
+        >
+          Live transcription is not supported on macOS (Vosk library unavailable). Please use Windows or Linux, or try the video transcription feature instead.
+        </Chip>
+      )}
+
       {/* Model Selection */}
       <div className="live-recorder__model-select">
         <Select
@@ -343,7 +366,7 @@ export default function LiveRecorder() {
           placeholder="Select a language"
           selectedKeys={[selectedModel]}
           onChange={(e) => setSelectedModel(e.target.value)}
-          isDisabled={isRecording}
+          isDisabled={isRecording || !voskSupported}
           size="sm"
         >
           {voskModels.map((model) => (
@@ -403,7 +426,7 @@ export default function LiveRecorder() {
           size="lg"
           startContent={isRecording ? <MdStop size={20} /> : <MdMic size={20} />}
           onPress={toggleRecording}
-          isDisabled={!isInitialized}
+          isDisabled={!isInitialized || !voskSupported}
           className="live-recorder__btn"
         >
           {isRecording ? 'Stop Recording' : 'Start Recording'}

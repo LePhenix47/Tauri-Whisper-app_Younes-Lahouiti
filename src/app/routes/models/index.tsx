@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Button,
   Card,
@@ -13,7 +13,7 @@ import {
   AccordionItem,
 } from "@heroui/react";
 import { IoDownloadOutline, IoCheckmarkCircle, IoClose } from "react-icons/io5";
-import { MdScience, MdAudioFile, MdMic } from "react-icons/md";
+import { MdScience, MdAudioFile, MdMic, MdWarning } from "react-icons/md";
 import {
   useDownloadModel,
   useModelsDir,
@@ -24,6 +24,7 @@ import {
 } from "@app/hooks/useModels";
 import type { ModelName } from "@api/models";
 import { WHISPER_MODELS, getWhisperModelNames, extractModelName } from "@constants/whisper-models";
+import { isVoskSupported } from "@app/utils/platform";
 
 const AVAILABLE_VOSK_MODELS: Array<{
   name: string;
@@ -109,6 +110,12 @@ function ModelsPage() {
   const [selectedVoskModel, setSelectedVoskModel] = useState<string>(
     "vosk-model-small-en-us-0.15"
   );
+  const [voskSupported, setVoskSupported] = useState(false);
+
+  // Check platform support on mount
+  useEffect(() => {
+    setVoskSupported(isVoskSupported());
+  }, []);
 
   // Queries
   const { data: modelsDir } = useModelsDir();
@@ -395,6 +402,20 @@ function ModelsPage() {
           title="Vosk Models"
           subtitle="Real-time speech recognition for live microphone input"
         >
+          {/* Platform unsupported warning */}
+          {!voskSupported && (
+            <section className="models-page__section">
+              <Chip
+                color="warning"
+                variant="flat"
+                startContent={<MdWarning size={18} />}
+                className="models-page__platform-warning"
+              >
+                Vosk live transcription is not supported on macOS (library unavailable). Please use Windows or Linux for this feature.
+              </Chip>
+            </section>
+          )}
+
           {/* Downloaded Vosk Models Card */}
           <section className="models-page__section">
             <Card>
@@ -466,7 +487,7 @@ function ModelsPage() {
                     placeholder="Choose a language model"
                     selectedKeys={[selectedVoskModel]}
                     onChange={(e) => setSelectedVoskModel(e.target.value)}
-                    isDisabled={downloadVoskModelMutation.isPending}
+                    isDisabled={downloadVoskModelMutation.isPending || !voskSupported}
                     className="models-page__select"
                   >
                     {AVAILABLE_VOSK_MODELS.map((model) => (
@@ -527,7 +548,7 @@ function ModelsPage() {
                       !downloadVoskModelMutation.isPending && <IoDownloadOutline size={20} />
                     }
                     onPress={handleDownloadVosk}
-                    isDisabled={downloadVoskModelMutation.isPending}
+                    isDisabled={downloadVoskModelMutation.isPending || !voskSupported}
                     isLoading={downloadVoskModelMutation.isPending}
                     className="models-page__download-button"
                   >

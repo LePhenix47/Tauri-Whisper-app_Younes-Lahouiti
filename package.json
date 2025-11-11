@@ -25,6 +25,7 @@
     "@tauri-apps/api": "^2.0.0",
     "@tauri-apps/plugin-dialog": "~2",
     "@tauri-apps/plugin-fs": "~2",
+    "@tauri-apps/plugin-os": "^2.3.2",
     "framer-motion": "^12.23.22",
     "gsap": "^3.13.0",
     "react": "^18.2.0",

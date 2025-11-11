@@ -12,12 +12,16 @@ use whisper_rs::{WhisperContext, WhisperContextParameters};
 use once_cell::sync::Lazy;
 
 mod whisper_rs_imp; // tells Rust to load src/whisper_rs_imp/mod.rs
+
+#[cfg(any(target_os = "windows", target_os = "linux"))]
 mod vosk_live_transcriber; // Vosk real-time transcription
 
 use whisper_rs_imp::transcriber::{transcribe_single_pass, TranscriptionSettings};
 use whisper_rs_imp::live_transcriber::{
     transcribe_live_chunk, LiveTranscriptionContext, LiveTranscriptionResult,
 };
+
+#[cfg(any(target_os = "windows", target_os = "linux"))]
 use vosk_live_transcriber::{
     VoskSessionManager, VoskTranscriptionResult,
 };
@@ -27,6 +31,7 @@ static LIVE_CONTEXT: Lazy<Arc<Mutex<LiveTranscriptionContext>>> =
     Lazy::new(|| Arc::new(Mutex::new(LiveTranscriptionContext::new())));
 
 // Global session manager for Vosk
+#[cfg(any(target_os = "windows", target_os = "linux"))]
 static VOSK_SESSION_MANAGER: Lazy<Arc<Mutex<VoskSessionManager>>> =
     Lazy::new(|| Arc::new(Mutex::new(VoskSessionManager::new())));
 
@@ -77,6 +82,7 @@ struct TranscriptionResult {
 // LIVE TRANSCRIPTION COMMANDS - VOSK (SESSION-BASED)
 // ============================================================================
 
+#[cfg(any(target_os = "windows", target_os = "linux"))]
 /// Start a new Vosk live transcription session
 /// Returns session ID to use in subsequent chunk calls
 #[tauri::command]
@@ -106,6 +112,7 @@ async fn start_vosk_session(
     Ok(session_id)
 }
 
+#[cfg(any(target_os = "windows", target_os = "linux"))]
 /// Process audio chunk in existing Vosk session
 /// Returns transcription result (partial or final)
 #[tauri::command]
@@ -127,6 +134,7 @@ async fn process_vosk_chunk(
     Ok(result)
 }
 
+#[cfg(any(target_os = "windows", target_os = "linux"))]
 /// End Vosk session and get final transcription
 #[tauri::command]
 async fn end_vosk_session(
@@ -419,6 +427,7 @@ async fn transcribe_file_advanced_impl(
 // VOSK MODEL MANAGEMENT
 // ============================================================================
 
+#[cfg(any(target_os = "windows", target_os = "linux"))]
 #[tauri::command]
 async fn download_vosk_model(app: AppHandle, model_name: String) -> Result<String, String> {
     let models_dir = get_models_dir_internal(&app).map_err(|e| format!("{:#}", e))?;
@@ -462,6 +471,7 @@ async fn download_vosk_model(app: AppHandle, model_name: String) -> Result<Strin
     Ok(format!("Successfully downloaded Vosk model '{}'", model_name))
 }
 
+#[cfg(any(target_os = "windows", target_os = "linux"))]
 #[tauri::command]
 fn list_vosk_models(app: AppHandle) -> Result<Vec<String>, String> {
     let models_dir = get_models_dir_internal(&app).map_err(|e| format!("{:#}", e))?;
@@ -685,10 +695,15 @@ async fn transcribe_file(
 // ============================================================================
 
 fn main() {
-    tauri::Builder::default()
+    let mut builder = tauri::Builder::default()
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
-        .invoke_handler(tauri::generate_handler![
+        .plugin(tauri_plugin_os::init());
+
+    // Register platform-agnostic commands
+    #[cfg(any(target_os = "windows", target_os = "linux"))]
+    {
+        builder = builder.invoke_handler(tauri::generate_handler![
             hello_world,
             get_gpu_info,
             test_whisper,
@@ -703,7 +718,26 @@ fn main() {
             start_vosk_session,
             process_vosk_chunk,
             end_vosk_session,
-        ])
+        ]);
+    }
+
+    // Register commands for macOS (without vosk)
+    #[cfg(target_os = "macos")]
+    {
+        builder = builder.invoke_handler(tauri::generate_handler![
+            hello_world,
+            get_gpu_info,
+            test_whisper,
+            get_models_dir,
+            download_model,
+            list_downloaded_models,
+            transcribe_file,
+            transcribe_file_advanced,
+            transcribe_audio_chunk,
+        ]);
+    }
+
+    builder
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
