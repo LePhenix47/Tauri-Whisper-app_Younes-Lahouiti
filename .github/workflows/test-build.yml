@@ -147,18 +147,26 @@ jobs:
     with:
       upload_artifacts: true
 
-  build-macos:
-    name: Build macOS
+  # build-macos:
+  #   name: Build macOS
+  #   needs: [test-rust]
+  #   if: always() && (github.ref_type == 'tag' || (needs.test-rust.result == 'success' || needs.test-rust.result == 'skipped'))
+  #   uses: ./.github/workflows/build-macos.yml
+  #   with:
+  #     upload_artifacts: true
+
+  build-android:
+    name: Build Android
     needs: [test-rust]
     if: always() && (github.ref_type == 'tag' || (needs.test-rust.result == 'success' || needs.test-rust.result == 'skipped'))
-    uses: ./.github/workflows/build-macos.yml
+    uses: ./.github/workflows/build-android.yml
     with:
       upload_artifacts: true
 
   # Step 3: Create GitHub Release (only on tags, after all builds complete)
   release:
     name: Create GitHub Release
-    needs: [build-windows, build-linux, build-macos]
+    needs: [build-windows, build-linux, build-android]
     if: github.ref_type == 'tag'
     runs-on: ubuntu-latest
     permissions:
@@ -192,6 +200,6 @@ jobs:
           files: |
             artifacts/tauri-app-windows-latest/**/*
             artifacts/tauri-app-ubuntu-latest/**/*
-            artifacts/tauri-app-macos-latest/**/*
+            artifacts/tauri-app-android/**/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
