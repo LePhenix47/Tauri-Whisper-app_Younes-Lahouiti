@@ -38,9 +38,10 @@ jobs:
           VULKAN_DIR=$(find . -maxdepth 1 -type d -name "vulkansdk-macos-*" | head -n 1)
           echo "VULKAN_SDK=$PWD/$VULKAN_DIR/macOS" >> $GITHUB_ENV
           echo "$PWD/$VULKAN_DIR/macOS/bin" >> $GITHUB_PATH
+          echo "GGML_BLAS=OFF" >> $GITHUB_ENV
           echo "GGML_NO_ACCELERATE=1" >> $GITHUB_ENV
-          echo "CFLAGS=-mcpu=apple-m1+noi8mm" >> $GITHUB_ENV
-          echo "CXXFLAGS=-mcpu=apple-m1+noi8mm" >> $GITHUB_ENV
+          echo "CFLAGS=-mcpu=apple-a14" >> $GITHUB_ENV
+          echo "CXXFLAGS=-mcpu=apple-a14" >> $GITHUB_ENV
           echo "MACOSX_DEPLOYMENT_TARGET=11.0" >> $GITHUB_ENV
 
       - name: Cache Rust dependencies
