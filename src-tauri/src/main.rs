@@ -215,6 +215,8 @@ fn convert_audio_with_ffmpeg(input_path: &Path, output_path: &Path) -> Result<f6
         .parse()
         .unwrap_or(0.0);
 
+    // TODO: Use ffmpeg-sidecar to auto-download/bundle ffmpeg instead of relying on system installation
+    // Currently requires user to have ffmpeg installed on their system
     let status = Command::new("ffmpeg")
         .args([
             "-i",

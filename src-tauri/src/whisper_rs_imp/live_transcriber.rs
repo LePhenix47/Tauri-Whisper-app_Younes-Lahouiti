@@ -74,6 +74,8 @@ pub fn convert_webm_to_wav(webm_data: &[u8], output_path: &PathBuf) -> Result<()
     // Run ffmpeg to convert WebM → WAV 16kHz mono
     println!("🎵 [LiveTranscription] Converting WebM to WAV 16kHz mono");
 
+    // TODO: Use ffmpeg-sidecar to auto-download/bundle ffmpeg instead of relying on system installation
+    // Currently requires user to have ffmpeg installed on their system
     let output = Command::new("ffmpeg")
         .args([
             "-y", // Overwrite output file
