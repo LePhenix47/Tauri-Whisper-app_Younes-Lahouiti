@@ -155,18 +155,18 @@ jobs:
   #   with:
   #     upload_artifacts: true
 
-  build-android:
-    name: Build Android
-    needs: [test-rust]
-    if: always() && (github.ref_type == 'tag' || (needs.test-rust.result == 'success' || needs.test-rust.result == 'skipped'))
-    uses: ./.github/workflows/build-android.yml
-    with:
-      upload_artifacts: true
+  # build-android:
+  #   name: Build Android
+  #   needs: [test-rust]
+  #   if: always() && (github.ref_type == 'tag' || (needs.test-rust.result == 'success' || needs.test-rust.result == 'skipped'))
+  #   uses: ./.github/workflows/build-android.yml
+  #   with:
+  #     upload_artifacts: true
 
   # Step 3: Create GitHub Release (only on tags, after all builds complete)
   release:
     name: Create GitHub Release
-    needs: [build-windows, build-linux, build-android]
+    needs: [build-windows, build-linux]
     if: github.ref_type == 'tag'
     runs-on: ubuntu-latest
     permissions:
@@ -200,6 +200,5 @@ jobs:
           files: |
             artifacts/tauri-app-windows-latest/**/*
             artifacts/tauri-app-ubuntu-latest/**/*
-            artifacts/tauri-app-android/**/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
