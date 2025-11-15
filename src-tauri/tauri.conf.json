@@ -8,13 +8,7 @@
   "bundle": {
     "active": true,
     "targets": "all",
-    "resources": [
-      "vulkan-1.dll",
-      "libvosk.dll",
-      "libvosk.so",
-      "libgcc_s_seh-1.dll",
-      "libstdc++-6.dll"
-    ],
+    "resources": [],
     "icon": [
       "icons/icon.ico",
       "icons/icon.png"
