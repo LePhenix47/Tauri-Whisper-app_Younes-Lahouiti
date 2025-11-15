@@ -77,6 +77,7 @@ jobs:
       - name: Build Tauri app
         run: bun run tauri:build -- --verbose
         env:
+          RUSTFLAGS: "-L ${{ github.workspace }}/src-tauri"
           LD_LIBRARY_PATH: "${{ github.workspace }}/src-tauri:$LD_LIBRARY_PATH"
 
       - name: Upload build artifacts
