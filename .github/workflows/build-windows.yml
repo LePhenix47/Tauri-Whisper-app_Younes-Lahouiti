@@ -57,6 +57,11 @@ jobs:
       - name: Setup short build path
         run: |
           $shortPath = "C:\t"
+          # Clean any existing build artifacts to prevent duplicate installers
+          if (Test-Path $shortPath) {
+            Remove-Item -Path $shortPath -Recurse -Force
+            Write-Host "✓ Cleaned existing build directory"
+          }
           New-Item -ItemType Directory -Force -Path $shortPath | Out-Null
           echo "CARGO_TARGET_DIR=$shortPath" | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
           Write-Host "✓ Set CARGO_TARGET_DIR to $shortPath"
