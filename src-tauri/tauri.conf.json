@@ -14,8 +14,8 @@
       "icons/icon.png"
     ]
   },
-  "productName": "Tauri Whisper App",
-  "mainBinaryName": "Tauri Whisper App",
+  "productName": "Whisperer",
+  "mainBinaryName": "Whisperer",
   "version": "0.0.1",
   "identifier": "com.tauri-whisper.app",
   "plugins": {},
@@ -26,7 +26,7 @@
         "dragDropEnabled": true,
         "fullscreen": false,
         "resizable": true,
-        "title": "Tauri Whisper App",
+        "title": "Whisperer",
         "width": 800,
         "height": 600,
         "useHttpsScheme": true,
