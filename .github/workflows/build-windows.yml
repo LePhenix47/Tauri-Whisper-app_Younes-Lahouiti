@@ -57,11 +57,6 @@ jobs:
       - name: Setup short build path
         run: |
           $shortPath = "C:\t"
-          # Clean any existing build artifacts to prevent duplicate installers
-          if (Test-Path $shortPath) {
-            Remove-Item -Path $shortPath -Recurse -Force
-            Write-Host "✓ Cleaned existing build directory"
-          }
           New-Item -ItemType Directory -Force -Path $shortPath | Out-Null
           echo "CARGO_TARGET_DIR=$shortPath" | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
           Write-Host "✓ Set CARGO_TARGET_DIR to $shortPath"
@@ -90,6 +85,14 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('src-tauri/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-
+
+      - name: Clean build artifacts
+        run: |
+          $bundlePath = "C:\t\release\bundle"
+          if (Test-Path $bundlePath) {
+            Remove-Item -Path $bundlePath -Recurse -Force
+            Write-Host "✓ Cleaned existing build artifacts"
+          }
 
       - name: Install frontend dependencies
         run: bun install

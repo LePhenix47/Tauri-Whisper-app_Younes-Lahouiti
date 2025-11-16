@@ -50,13 +50,6 @@ jobs:
           sudo apt-get install -y vulkan-sdk --no-install-recommends || sudo apt-get install -y vulkan-headers libvulkan-dev spirv-tools glslang-tools shaderc
           echo "VULKAN_SDK=/usr" >> $GITHUB_ENV
 
-      - name: Clean build artifacts
-        run: |
-          if [ -d "src-tauri/target/release/bundle" ]; then
-            rm -rf src-tauri/target/release/bundle
-            echo "✓ Cleaned existing build artifacts"
-          fi
-
       - name: Cache Rust dependencies
         uses: actions/cache@v4
         with:
@@ -67,6 +60,13 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('src-tauri/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-
+
+      - name: Clean build artifacts
+        run: |
+          if [ -d "src-tauri/target/release/bundle" ]; then
+            rm -rf src-tauri/target/release/bundle
+            echo "✓ Cleaned existing build artifacts"
+          fi
 
       - name: Install frontend dependencies
         run: bun install
