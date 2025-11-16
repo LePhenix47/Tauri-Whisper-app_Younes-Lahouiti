@@ -149,7 +149,7 @@ The app uses [`whisper-rs`](https://codeberg.org/tazz4843/whisper-rs), a Rust wr
 ```bash
 # Install build essentials
 sudo apt update
-sudo apt install build-essential pkg-config libssl-dev
+sudo apt install build-essential pkg-config libssl-dev libclang-dev
 
 # Install Tauri dependencies
 sudo apt install libwebkit2gtk-4.1-dev \
@@ -163,6 +163,7 @@ sudo apt install libwebkit2gtk-4.1-dev \
 - `build-essential` - C/C++ compiler (gcc, g++, make)
 - `pkg-config` - Manages compile/link flags for libraries
 - `libssl-dev` - OpenSSL development files
+- `libclang-dev` - Clang library for Rust bindgen (required for whisper-rs)
 - `libwebkit2gtk-4.1-dev` - WebKit rendering engine for Linux
 - `libayatana-appindicator3-dev` - System tray support
 - `librsvg2-dev` - SVG rendering
