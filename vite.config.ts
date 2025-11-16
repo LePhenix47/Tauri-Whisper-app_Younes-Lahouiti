@@ -16,6 +16,9 @@ export default defineConfig(({ mode }) => ({
   server: {
     port: 1420,
     strictPort: true,
+    watch: {
+      ignored: ["**/src-tauri/target/**"],
+    },
   },
   envPrefix: ["REACT_APP_", "VITE_", "TAURI_"],
   css: {
