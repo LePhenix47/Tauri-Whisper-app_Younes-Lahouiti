@@ -23,7 +23,7 @@ fn main() {
     };
 
     let libs_to_copy = match target_os.as_str() {
-        "windows" => vec!["libwinpthread-1.dll", "libvosk.dll", "libgcc_s_seh-1.dll", "libstdc++-6.dll", "vulkan-1.dll"],
+        "windows" => vec!["libgcc_s_seh-1.dll", "libstdc++-6.dll", "libvosk.dll", "libwinpthread-1.dll", "vulkan-1.dll"],
         "linux" => vec!["libvosk.so"],
         _ => vec![],
     };
