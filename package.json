@@ -47,6 +47,7 @@
     "@tanstack/react-router-devtools": "^1.132.51",
     "@tanstack/router-plugin": "^1.132.51",
     "@tauri-apps/cli": "^2.0.0",
+    "@types/node": "^24.10.1",
     "@types/react": "^18.2.47",
     "@types/react-dom": "^18.2.18",
     "@vitejs/plugin-react": "^4.2.1",
