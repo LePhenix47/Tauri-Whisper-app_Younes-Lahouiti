@@ -122,21 +122,54 @@ This app processes audio/video files locally using Whisper AI to generate accura
   bun --version
   ```
 
-### For Building Whisper-RS
+### Platform-Specific Prerequisites
+
+#### Windows
+
+**For Building Whisper-RS:**
 
 The app uses [`whisper-rs`](https://codeberg.org/tazz4843/whisper-rs), a Rust wrapper for Whisper.cpp. Building requires:
 
 - **[CMake](https://cmake.org/download/)** (required for compiling C++ code)
-  - Download `cmake-<version>-windows-x86_64.msi` (Windows)
+  - Download `cmake-<version>-windows-x86_64.msi`
   - ✅ **Check "Add CMake to system PATH" during installation**
   - Verify: `cmake --version`
 
 - **[LLVM/Clang](https://github.com/llvm/llvm-project/releases/latest)** (required for C++ compilation)
-  - Download `LLVM-<version>-win64.exe` (Windows)
+  - Download `LLVM-<version>-win64.exe`
   - ✅ **Check "Add LLVM to the system PATH" during installation**
   - Verify: `clang --version`
 
 > 📝 **Note**: First build may take 5-10 minutes as it compiles Whisper.cpp from source.
+
+#### Linux (Ubuntu/Debian)
+
+**Build tools and system dependencies:**
+
+```bash
+# Install build essentials
+sudo apt update
+sudo apt install build-essential pkg-config libssl-dev
+
+# Install Tauri dependencies
+sudo apt install libwebkit2gtk-4.1-dev \
+  libayatana-appindicator3-dev \
+  librsvg2-dev \
+  libvulkan-dev \
+  vulkan-tools
+```
+
+**What these packages do:**
+- `build-essential` - C/C++ compiler (gcc, g++, make)
+- `pkg-config` - Manages compile/link flags for libraries
+- `libssl-dev` - OpenSSL development files
+- `libwebkit2gtk-4.1-dev` - WebKit rendering engine for Linux
+- `libayatana-appindicator3-dev` - System tray support
+- `librsvg2-dev` - SVG rendering
+- `libvulkan-dev` - Vulkan GPU acceleration headers
+- `vulkan-tools` - Vulkan debugging tools
+
+> 📝 **Note**: On other Linux distros (Fedora, Arch, etc.), see [Tauri Prerequisites](https://v2.tauri.app/start/prerequisites/#linux) for equivalent packages.
 
 ### For Building Vosk (Live Transcription)
 
